@@ -66,6 +66,7 @@ Core flow:
 - [Architecture](architecture.md): system structure, data model, frontend/backend responsibilities
 - [Decisions](decisions.md): ADRs and why choices were made
 - [Dev Guide](dev-guide.md): local setup, commands, workflow, testing
+  - includes the canonical README screenshot refresh workflow (size/zoom/theme/data state)
 - [API Reference](api-reference.md): endpoints, payloads, constraints
 - [Security](security.md): security posture, controls, hardening expectations
 

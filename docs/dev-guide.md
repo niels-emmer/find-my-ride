@@ -152,6 +152,26 @@ When changing code:
 2. Keep `docs/api-reference.md` in sync with route changes.
 3. Keep architecture and decision pages current.
 
+## README screenshot refresh workflow
+
+When refreshing README screenshots (`docs/assets/screenshots/home.png`, `history.png`, `settings.png`), keep these capture defaults so the README layout stays consistent:
+
+- Output format/size: PNG at `1170x1992` for each image.
+- Visual scale: apply `1.5x` page zoom during capture so card text and controls remain readable in the 3-up README gallery.
+- Theme: dark mode (`fmr_theme_mode=dark`) with the default `evergreen` accent.
+- Environment: run against the local Docker stack (`docker compose up -d --build`) on the frontend URL (`http://127.0.0.1:${FRONTEND_PORT}`; current default in this repo is `15173`).
+- Data setup: use a dedicated demo account (currently `readme_demo`) with at least 3 history rows:
+  - at least 2 rows with stored geocoded `location_label` + coordinates
+  - at least 1 row without location (note/photo fallback state)
+- Required capture states:
+  - `home`: default `Parked?` card
+  - `history`: first record expanded via `More info`, with OpenStreetMap embed visible
+  - `settings`: `Profile` section visible including theme + accent controls
+- Capture hygiene:
+  - dismiss transient toasts before each screenshot
+  - avoid camera/mfa modal overlays
+  - commit only the screenshot assets (no temporary local capture scripts)
+
 ## One-time backfill for old address labels
 
 If older records have missing/coordinate-style `location_label` values, run:
