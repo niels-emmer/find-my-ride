@@ -162,6 +162,7 @@ async function reverseGeocode(latitude: number, longitude: number): Promise<stri
 }
 
 function App(): JSX.Element {
+  const toastTimeoutRef = useRef<number | null>(null);
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
   const [systemStatusError, setSystemStatusError] = useState<string>('');
   const [systemStatusReloadKey, setSystemStatusReloadKey] = useState<number>(0);
@@ -323,6 +324,28 @@ function App(): JSX.Element {
 
     void refreshData(token, currentUser, ownerIdForQuery, setRecords, setLatestRecord, setUsers, setMessage);
   }, [token, currentUser, ownerIdForQuery]);
+
+  useEffect(() => {
+    if (!currentUser || !message) {
+      if (toastTimeoutRef.current !== null) {
+        window.clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    toastTimeoutRef.current = window.setTimeout(() => {
+      setMessage('');
+      toastTimeoutRef.current = null;
+    }, 5000);
+
+    return () => {
+      if (toastTimeoutRef.current !== null) {
+        window.clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = null;
+      }
+    };
+  }, [currentUser, message]);
 
   const handleAuthSuccess = (nextToken: string, user: User): void => {
     localStorage.setItem(TOKEN_KEY, nextToken);
@@ -539,7 +562,14 @@ function App(): JSX.Element {
 
       <BottomTabBar activeTab={activeTab} onSelect={setActiveTab} />
 
-      {message ? <div className="toast">{message}</div> : null}
+      {message ? (
+        <div className="toast" role="status" aria-live="polite">
+          <span>{message}</span>
+          <button className="toast-dismiss" type="button" onClick={() => setMessage('')} aria-label="Dismiss notification">
+            Dismiss
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

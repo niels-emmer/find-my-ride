@@ -498,6 +498,39 @@ describe('App tabs and settings', () => {
     });
   });
 
+  it('allows dismissing toast notifications manually', async () => {
+    seedAuthenticatedSession(false);
+    mockGeolocationFailure('No signal');
+
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Add a location, note, or photo before saving.');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }));
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it(
+    'auto-dismisses toast notifications after timeout',
+    async () => {
+      seedAuthenticatedSession(false);
+      mockGeolocationFailure('No signal');
+
+      render(<App />);
+      expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+      expect(await screen.findByRole('status')).toHaveTextContent('Add a location, note, or photo before saving.');
+
+      await waitFor(() => {
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      }, { timeout: 7000 });
+    },
+    10000
+  );
+
   it('captures parking photos with slot buttons and previews', async () => {
     seedAuthenticatedSession(false);
 
