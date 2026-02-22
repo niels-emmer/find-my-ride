@@ -82,6 +82,15 @@ function setUserAgent(value: string): void {
   });
 }
 
+function setMediaDevices(
+  getUserMedia?: (constraints: MediaStreamConstraints) => Promise<MediaStream>
+): void {
+  Object.defineProperty(window.navigator, 'mediaDevices', {
+    configurable: true,
+    value: getUserMedia ? { getUserMedia } : undefined
+  });
+}
+
 function seedAuthenticatedSession(isAdmin: boolean): void {
   localStorage.setItem('fmr_access_token', 'token-123');
 
@@ -157,6 +166,31 @@ describe('App tabs and settings', () => {
     mockGeolocationSuccess(52.01, 4.31);
     setSecureContext(true);
     setUserAgent(DEFAULT_USER_AGENT);
+    setMediaDevices(async () => ({
+      getTracks: () => [{ stop: vi.fn() }]
+    } as unknown as MediaStream));
+    Object.defineProperty(HTMLMediaElement.prototype, 'play', {
+      configurable: true,
+      value: vi.fn().mockResolvedValue(undefined)
+    });
+    Object.defineProperty(HTMLVideoElement.prototype, 'videoWidth', {
+      configurable: true,
+      get: () => 1280
+    });
+    Object.defineProperty(HTMLVideoElement.prototype, 'videoHeight', {
+      configurable: true,
+      get: () => 720
+    });
+    Object.defineProperty(HTMLCanvasElement.prototype, 'toBlob', {
+      configurable: true,
+      value: (callback: BlobCallback) => {
+        callback(new Blob(['captured-image'], { type: 'image/jpeg' }));
+      }
+    });
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      configurable: true,
+      value: vi.fn(() => ({ drawImage: vi.fn() } as unknown as CanvasRenderingContext2D))
+    });
   });
 
   afterEach(() => {
@@ -573,6 +607,42 @@ describe('App tabs and settings', () => {
     expect(screen.getByLabelText('Capture photo 1')).toBeInTheDocument();
   });
 
+  it('captures parking photos with in-app camera modal when media devices are available', async () => {
+    seedAuthenticatedSession(false);
+    const stopTrack = vi.fn();
+    const getUserMedia = vi.fn(async () => ({
+      getTracks: () => [{ stop: stopTrack }]
+    } as unknown as MediaStream));
+    setMediaDevices(getUserMedia);
+
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Capture photo 1' }));
+    expect(await screen.findByRole('dialog', { name: 'Capture parking photo' })).toBeInTheDocument();
+    expect(getUserMedia).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Capture' }));
+    expect(await screen.findByAltText('Selected parking photo 1')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Capture parking photo' })).not.toBeInTheDocument();
+    expect(stopTrack).toHaveBeenCalled();
+  });
+
+  it('falls back to file picker when in-app camera is unavailable', async () => {
+    seedAuthenticatedSession(false);
+    setMediaDevices(undefined);
+    const clickSpy = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Capture photo 1' }));
+    expect(clickSpy).toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Capture parking photo' })).not.toBeInTheDocument();
+
+    clickSpy.mockRestore();
+  });
+
   it('shows selected photo thumbnails in active parking view', async () => {
     seedAuthenticatedSession(false);
     mockGeolocationFailure('No signal');
@@ -610,16 +680,14 @@ describe('App tabs and settings', () => {
     expect(await screen.findByAltText('Selected parking photo 1')).toBeInTheDocument();
   });
 
-  it('uses samsung internet fallback that disables direct capture attribute', async () => {
+  it('does not force a direct capture attribute on file inputs', async () => {
     seedAuthenticatedSession(false);
-    setUserAgent('Mozilla/5.0 SamsungBrowser/25.0');
 
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
     const cameraInput = screen.getByLabelText('Capture photo 1') as HTMLInputElement;
     expect(cameraInput).not.toHaveAttribute('capture');
-    expect(screen.queryByText(/Samsung Internet note/)).not.toBeInTheDocument();
   });
 
   it('switches home to active parking state and saves only after explicit end confirmation', async () => {

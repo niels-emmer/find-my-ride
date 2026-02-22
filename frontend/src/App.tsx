@@ -1183,13 +1183,18 @@ function ParkNowCard({
   const [note, setNote] = useState('');
   const [photoSlots, setPhotoSlots] = useState<Array<File | null>>([null, null, null]);
   const photoInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const cameraVideoRef = useRef<HTMLVideoElement | null>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
   const [locatedFix, setLocatedFix] = useState<LocatedFix | null>(null);
   const [locateState, setLocateState] = useState<'idle' | 'ready' | 'unavailable'>('idle');
   const [locateHint, setLocateHint] = useState<string>('');
+  const [cameraSlotIndex, setCameraSlotIndex] = useState<number | null>(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [cameraBusy, setCameraBusy] = useState(false);
+  const [cameraError, setCameraError] = useState('');
   const [locating, setLocating] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const isSamsungInternet = useMemo(() => /SamsungBrowser/i.test(navigator.userAgent), []);
+  const canUseInAppCamera = window.isSecureContext && typeof navigator.mediaDevices?.getUserMedia === 'function';
 
   const previewUrls = useMemo(() => photoSlots.map((file) => (file ? URL.createObjectURL(file) : '')), [photoSlots]);
 
@@ -1203,9 +1208,33 @@ function ParkNowCard({
     };
   }, [previewUrls]);
 
+  const stopCameraStream = (): void => {
+    const stream = cameraStreamRef.current;
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
+      cameraStreamRef.current = null;
+    }
+    if (cameraVideoRef.current) {
+      cameraVideoRef.current.srcObject = null;
+    }
+  };
+
+  const closeCameraModal = (): void => {
+    stopCameraStream();
+    setCameraSlotIndex(null);
+    setCameraReady(false);
+    setCameraBusy(false);
+    setCameraError('');
+  };
+
   const setPhotoSlotFromFileList = (slotIndex: number, fileList: FileList | null): void => {
     const selected = fileList?.[0] ?? null;
     setPhotoSlots((previous) => previous.map((entry, index) => (index === slotIndex ? selected : entry)));
+    if (selected && cameraSlotIndex === slotIndex) {
+      closeCameraModal();
+    }
   };
 
   const syncPhotoSlotsFromInputs = (): void => {
@@ -1236,6 +1265,119 @@ function ParkNowCard({
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
+
+  useEffect(() => {
+    if (cameraSlotIndex === null || !canUseInAppCamera) {
+      return;
+    }
+
+    let cancelled = false;
+    setCameraReady(false);
+    setCameraBusy(true);
+    setCameraError('');
+
+    void (async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => {
+            track.stop();
+          });
+          return;
+        }
+
+        cameraStreamRef.current = stream;
+        const video = cameraVideoRef.current;
+        if (!video) {
+          throw new Error('Camera preview is unavailable.');
+        }
+        video.srcObject = stream;
+        try {
+          await video.play();
+        } catch {
+          // Some browsers block autoplay but still render a live stream frame.
+        }
+        if (!cancelled) {
+          setCameraReady(true);
+        }
+      } catch {
+        if (!cancelled) {
+          setCameraReady(false);
+          setCameraError('Could not open camera. You can still use gallery upload.');
+        }
+      } finally {
+        if (!cancelled) {
+          setCameraBusy(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      stopCameraStream();
+    };
+  }, [cameraSlotIndex, canUseInAppCamera]);
+
+  const openGalleryPicker = (slotIndex: number): void => {
+    const input = photoInputRefs.current[slotIndex];
+    if (!input) {
+      return;
+    }
+    input.value = '';
+    input.click();
+  };
+
+  const openCaptureForSlot = (slotIndex: number): void => {
+    if (canUseInAppCamera) {
+      setCameraSlotIndex(slotIndex);
+      return;
+    }
+    openGalleryPicker(slotIndex);
+  };
+
+  const capturePhotoFromPreview = (): void => {
+    if (cameraSlotIndex === null) {
+      return;
+    }
+    const video = cameraVideoRef.current;
+    if (!video || video.videoWidth <= 0 || video.videoHeight <= 0) {
+      setCameraError('Camera is still initializing. Try again.');
+      return;
+    }
+
+    setCameraBusy(true);
+    setCameraError('');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      setCameraBusy(false);
+      setCameraError('Could not capture the photo.');
+      return;
+    }
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          setCameraBusy(false);
+          setCameraError('Could not capture the photo.');
+          return;
+        }
+
+        const fileName = `parking-photo-${new Date().toISOString().replace(/[:.]/g, '-')}.jpg`;
+        const capturedFile = new File([blob], fileName, { type: 'image/jpeg' });
+        setPhotoSlots((previous) => previous.map((entry, index) => (index === cameraSlotIndex ? capturedFile : entry)));
+        closeCameraModal();
+      },
+      'image/jpeg',
+      0.9
+    );
+  };
 
   const runLocate = async (): Promise<LocatedFix | null> => {
     setLocating(true);
@@ -1269,71 +1411,66 @@ function ParkNowCard({
   };
 
   return (
-    <div className="stack park-form">
-      <p className="muted">
-        Use Locate for a GPS fix when available. If GPS fails, you can still save with notes and/or photos.
-      </p>
+    <>
+      <div className="stack park-form">
+        <p className="muted">
+          Use Locate for a GPS fix when available. If GPS fails, you can still save with notes and/or photos.
+        </p>
 
-      <div className="stack">
-        <button
-          className="btn secondary"
-          type="button"
-          disabled={saving || locating}
-          onClick={() => {
-            void runLocate();
-          }}
-        >
-          {locating ? 'Locating...' : 'Locate'}
-        </button>
-        {locateState === 'ready' && locatedFix ? (
-          <p className="small-meta">
-            {locatedFix.placeLabel}
-            <br />
-            {coordinateLabel(locatedFix.latitude, locatedFix.longitude)}
-          </p>
-        ) : locateState === 'unavailable' ? (
-          <>
-            <p className="small-meta error">No reception</p>
-            {locateHint ? <p className="small-meta">{locateHint}</p> : null}
-          </>
-        ) : (
-          <p className="small-meta">Tap Locate to confirm position.</p>
-        )}
-      </div>
+        <div className="stack">
+          <button
+            className="btn secondary"
+            type="button"
+            disabled={saving || locating}
+            onClick={() => {
+              void runLocate();
+            }}
+          >
+            {locating ? 'Locating...' : 'Locate'}
+          </button>
+          {locateState === 'ready' && locatedFix ? (
+            <p className="small-meta">
+              {locatedFix.placeLabel}
+              <br />
+              {coordinateLabel(locatedFix.latitude, locatedFix.longitude)}
+            </p>
+          ) : locateState === 'unavailable' ? (
+            <>
+              <p className="small-meta error">No reception</p>
+              {locateHint ? <p className="small-meta">{locateHint}</p> : null}
+            </>
+          ) : (
+            <p className="small-meta">Tap Locate to confirm position.</p>
+          )}
+        </div>
 
-      <label className="field">
-        Note (optional)
-        <textarea
-          rows={3}
-          value={note}
-          maxLength={2000}
-          onChange={(event) => setNote(event.target.value)}
-          placeholder="Example: level B2, yellow elevator, section C"
-        />
-      </label>
+        <label className="field">
+          Note (optional)
+          <textarea
+            rows={3}
+            value={note}
+            maxLength={2000}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Example: level B2, yellow elevator, section C"
+          />
+        </label>
 
-      <div className="field">
-        <span>Photos (optional, {photoSlots.filter(Boolean).length}/3)</span>
-        <div className="capture-grid">
-          {photoSlots.map((file, index) => {
-            const inputId = `park-photo-slot-${index + 1}`;
-            const shouldUseCaptureAttribute = !isSamsungInternet;
-            return (
-              <div className="capture-slot" key={inputId}>
-                <div className={`capture-picker${file ? ' has-photo' : ''}`}>
+        <div className="field">
+          <span>Photos (optional, {photoSlots.filter(Boolean).length}/3)</span>
+          <div className="capture-grid">
+            {photoSlots.map((file, index) => {
+              const inputId = `park-photo-slot-${index + 1}`;
+              return (
+                <div className="capture-slot" key={inputId}>
                   <input
                     id={inputId}
                     ref={(element) => {
                       photoInputRefs.current[index] = element;
                     }}
                     aria-label={`Capture photo ${index + 1}`}
-                    className="capture-input"
+                    className="capture-input-hidden"
                     type="file"
                     accept="image/*"
-                    {...(shouldUseCaptureAttribute ? { capture: 'environment' as const } : {})}
-                    onClick={(event) => {
-                      event.currentTarget.value = '';
-                    }}
                     onInput={(event) => {
                       setPhotoSlotFromFileList(index, (event.currentTarget as HTMLInputElement).files);
                     }}
@@ -1341,102 +1478,166 @@ function ParkNowCard({
                       setPhotoSlotFromFileList(index, event.currentTarget.files);
                     }}
                   />
-
+                  <div className={`capture-picker${file ? ' has-photo' : ''}`}>
+                    {file ? (
+                      <button
+                        className="capture-thumb-button"
+                        type="button"
+                        onClick={() => {
+                          openCaptureForSlot(index);
+                        }}
+                      >
+                        <div className="capture-thumb">
+                          <img
+                            className="capture-thumb-image"
+                            src={previewUrls[index]}
+                            alt={`Selected parking photo ${index + 1}`}
+                          />
+                        </div>
+                      </button>
+                    ) : (
+                      <button
+                        className="btn secondary capture-cta"
+                        type="button"
+                        onClick={() => {
+                          openCaptureForSlot(index);
+                        }}
+                      >
+                        Capture photo {index + 1}
+                      </button>
+                    )}
+                  </div>
                   {file ? (
-                    <div className="capture-thumb">
-                      <img
-                        className="capture-thumb-image"
-                        src={previewUrls[index]}
-                        alt={`Selected parking photo ${index + 1}`}
-                      />
+                    <div className="button-row">
+                      <button
+                        className="btn secondary tiny"
+                        type="button"
+                        onClick={() => {
+                          openCaptureForSlot(index);
+                        }}
+                      >
+                        Retake
+                      </button>
+                      <button
+                        className="btn secondary tiny"
+                        type="button"
+                        onClick={() => {
+                          const input = photoInputRefs.current[index];
+                          if (input) {
+                            input.value = '';
+                          }
+                          setPhotoSlots((previous) =>
+                            previous.map((entry, entryIndex) => (entryIndex === index ? null : entry))
+                          );
+                        }}
+                      >
+                        Remove
+                      </button>
                     </div>
-                  ) : (
-                    <div className="btn secondary capture-cta">
-                      Capture photo {index + 1}
-                    </div>
-                  )}
+                  ) : null}
                 </div>
-                {file ? (
-                  <button
-                    className="btn secondary tiny"
-                    type="button"
-                    onClick={() => {
-                      const input = photoInputRefs.current[index];
-                      if (input) {
-                        input.value = '';
-                      }
-                      setPhotoSlots((previous) =>
-                        previous.map((entry, entryIndex) => (entryIndex === index ? null : entry))
-                      );
-                    }}
-                  >
-                    Remove
-                  </button>
-                ) : null}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
+
+        <button
+          className="btn"
+          type="button"
+          disabled={saving}
+          onClick={() => {
+            setSaving(true);
+            void (async () => {
+              try {
+                let location = locatedFix;
+                if (!location) {
+                  location = await runLocate();
+                }
+                const hasEvidence = Boolean(note.trim()) || photoSlots.some((file) => Boolean(file));
+                if (!location) {
+                  if (!hasEvidence) {
+                    if (!window.isSecureContext) {
+                      throw new Error(
+                        'Locate requires HTTPS on most mobile browsers. Add a note/photo or open this app via HTTPS and retry.'
+                      );
+                    }
+                    throw new Error('Add a location, note, or photo before saving.');
+                  }
+                }
+
+                const photos = await Promise.all(
+                  photoSlots
+                    .filter((file): file is File => Boolean(file))
+                    .map(async (file, index) => ({
+                      id: `photo-${index + 1}`,
+                      name: file.name || `parking-photo-${index + 1}.jpg`,
+                      type: file.type || 'image/jpeg',
+                      data_url: await fileToDataUrl(file)
+                    }))
+                );
+                const now = new Date().toISOString();
+                onStartParking({
+                  started_at: now,
+                  latitude: location ? location.latitude : null,
+                  longitude: location ? location.longitude : null,
+                  location_label: location ? location.placeLabel : null,
+                  note: note.trim() || null,
+                  photos
+                });
+                setNote('');
+                setPhotoSlots([null, null, null]);
+                setLocatedFix(null);
+                setLocateState('idle');
+              } catch (error) {
+                onError((error as Error).message);
+              } finally {
+                setSaving(false);
+              }
+            })();
+          }}
+        >
+          {saving ? 'Saving...' : 'Park Here Now'}
+        </button>
       </div>
 
-      <button
-        className="btn"
-        type="button"
-        disabled={saving}
-        onClick={() => {
-          setSaving(true);
-          void (async () => {
-            try {
-              let location = locatedFix;
-              if (!location) {
-                location = await runLocate();
-              }
-              const hasEvidence = Boolean(note.trim()) || photoSlots.some((file) => Boolean(file));
-              if (!location) {
-                if (!hasEvidence) {
-                  if (!window.isSecureContext) {
-                    throw new Error(
-                      'Locate requires HTTPS on most mobile browsers. Add a note/photo or open this app via HTTPS and retry.'
-                    );
-                  }
-                  throw new Error('Add a location, note, or photo before saving.');
-                }
-              }
-
-              const photos = await Promise.all(
-                photoSlots
-                  .filter((file): file is File => Boolean(file))
-                  .map(async (file, index) => ({
-                    id: `photo-${index + 1}`,
-                    name: file.name || `parking-photo-${index + 1}.jpg`,
-                    type: file.type || 'image/jpeg',
-                    data_url: await fileToDataUrl(file)
-                  }))
-              );
-              const now = new Date().toISOString();
-              onStartParking({
-                started_at: now,
-                latitude: location ? location.latitude : null,
-                longitude: location ? location.longitude : null,
-                location_label: location ? location.placeLabel : null,
-                note: note.trim() || null,
-                photos
-              });
-              setNote('');
-              setPhotoSlots([null, null, null]);
-              setLocatedFix(null);
-              setLocateState('idle');
-            } catch (error) {
-              onError((error as Error).message);
-            } finally {
-              setSaving(false);
-            }
-          })();
-        }}
-      >
-        {saving ? 'Saving...' : 'Park Here Now'}
-      </button>
-    </div>
+      {cameraSlotIndex !== null ? (
+        <div className="otp-modal-backdrop camera-modal-backdrop" role="dialog" aria-modal="true" aria-label="Capture parking photo">
+          <section className="panel camera-modal">
+            <h2>Capture photo {cameraSlotIndex + 1}</h2>
+            <p className="muted">Keep the camera steady and use Capture. You can also upload from gallery.</p>
+            <div className="camera-preview-frame">
+              <video ref={cameraVideoRef} className="camera-preview" autoPlay muted playsInline />
+            </div>
+            {cameraError ? <p className="error">{cameraError}</p> : null}
+            <div className="button-row">
+              <button
+                className="btn"
+                type="button"
+                disabled={cameraBusy || !cameraReady}
+                onClick={() => {
+                  capturePhotoFromPreview();
+                }}
+              >
+                {cameraBusy ? 'Processing...' : 'Capture'}
+              </button>
+              <button
+                className="btn secondary"
+                type="button"
+                disabled={cameraBusy}
+                onClick={() => {
+                  openGalleryPicker(cameraSlotIndex);
+                }}
+              >
+                Use gallery
+              </button>
+              <button className="btn secondary" type="button" disabled={cameraBusy} onClick={closeCameraModal}>
+                Cancel
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </>
   );
 }
 

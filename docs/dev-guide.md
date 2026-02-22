@@ -89,8 +89,8 @@ Endpoints:
 - Coordinate-style location labels are rejected by the API; coordinates must be paired with a physical address label.
 - Stored labels are normalized in street-first order (`Street 12, ZIP City, Province, Country`).
 - On failure, the UI shows `No reception`; save is still allowed when note and/or photos are provided.
-- Photos are handled via 3 capture slots; each slot is an empty action button or an image thumbnail that can be replaced/removed.
-- Samsung Internet PWA note: camera capture uses picker fallback (no forced `capture` attribute) to avoid returning without a file.
+- Photos are handled via 3 capture slots; each slot is an empty action button or an image thumbnail that can be retaken/removed.
+- Camera capture prefers an in-app camera modal (`getUserMedia`) to avoid external camera-app round trips on memory-constrained mobile browsers; gallery/file-picker fallback remains available.
 
 ## Multi-user behavior
 

@@ -59,8 +59,9 @@ Single-page React app with feature sections:
 - Auth form panel is anchored toward the lower half of the viewport with reserved bottom spacing for a future banner slot
 - Subtle parked-car background image (locally bundled from selected royalty-free source) with theme-aware overlays to preserve readability
 - Park-now action with `Locate` (geolocation) + reverse place lookup + optional note + up to 3 photos
-- Park-now photo intake uses 3 camera-first capture slots with thumbnail preview/replace controls
-- Camera file selection is additionally synchronized on `focus`/`visibilitychange` to handle mobile camera-app round trips
+- Park-now photo intake uses 3 camera-first capture slots with thumbnail preview/retake/remove controls
+- Camera capture is handled in-app with `getUserMedia` (when available) to avoid mobile browser restarts during external camera handoff; gallery/file-picker fallback remains available
+- File-picker selection is synchronized on `focus`/`visibilitychange` for fallback browser flows
 - Park-now location state is explicit (`ready` with place/coords or `No reception`)
 - On non-secure contexts (common on HTTP LAN URLs), location state surfaces an HTTPS requirement hint for mobile browsers
 - Park-now start accepts either a valid location pair or note/photo evidence, allowing garage use when GPS is unavailable
