@@ -514,6 +514,31 @@ button,
   margin: 0;
 }
 
+.parking-session-metrics {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.2rem 0.7rem;
+  align-items: baseline;
+}
+
+.parking-session-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.parking-session-value {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.parking-session-active {
+  font-weight: 700;
+}
+
 .parking-active-location {
   margin-bottom: 0;
 }

@@ -779,7 +779,10 @@ describe('App tabs and settings', () => {
 
     expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
     expect(screen.getByText('Sticky session note')).toBeInTheDocument();
-    expect(screen.getByText(/Active \d+h \d{2}m\./)).toBeInTheDocument();
+    expect(screen.getByText('Started:')).toBeInTheDocument();
+    expect(screen.getByText('Active:')).toBeInTheDocument();
+    const activeValue = screen.getByText(/\d+h \d{2}m/);
+    expect(activeValue.tagName).toBe('STRONG');
   });
 
   it('requests browser notifications for active parking sessions when available', async () => {
@@ -789,15 +792,20 @@ describe('App tabs and settings', () => {
     const notificationCalls = vi.fn();
     const visibilityDescriptor = Object.getOwnPropertyDescriptor(document, 'visibilityState');
     const notificationDescriptor = Object.getOwnPropertyDescriptor(window, 'Notification');
+    const focusSpy = vi.spyOn(window, 'focus').mockImplementation(() => {});
     class NotificationMock {
       static permission: NotificationPermission = 'default';
+      static instances: NotificationMock[] = [];
       static requestPermission = vi.fn(async (): Promise<NotificationPermission> => {
         NotificationMock.permission = 'granted';
         return 'granted';
       });
+      onclick: (() => void) | null = null;
+      close = vi.fn();
 
       constructor(title: string, options?: NotificationOptions) {
         notificationCalls(title, options);
+        NotificationMock.instances.push(this);
       }
     }
 
@@ -825,7 +833,13 @@ describe('App tabs and settings', () => {
       await waitFor(() => {
         expect(notificationCalls).toHaveBeenCalled();
       });
+      const firstCallOptions = notificationCalls.mock.calls[0]?.[1] as NotificationOptions | undefined;
+      expect(firstCallOptions?.body).toContain('Active:');
+      expect(NotificationMock.instances[0]?.onclick).toBeTypeOf('function');
+      (NotificationMock.instances[0].onclick as () => void)();
+      expect(focusSpy).toHaveBeenCalled();
     } finally {
+      focusSpy.mockRestore();
       if (visibilityDescriptor) {
         Object.defineProperty(document, 'visibilityState', visibilityDescriptor);
       }

@@ -530,18 +530,20 @@ function App(): JSX.Element {
         return;
       }
 
-      if (document.visibilityState !== 'hidden') {
-        return;
-      }
-
       try {
-        const locationText = activeParking.location_label?.trim()
-          ? ` at ${activeParking.location_label}`
-          : '';
-        new Notification('You are parked', {
-          body: `${formatActiveDuration(activeParking.started_at)} active${locationText}`,
+        const locationText = activeParking.location_label?.trim() ? `Location: ${activeParking.location_label}` : '';
+        const notification = new Notification('You are parked', {
+          body: `Active: ${formatActiveDuration(activeParking.started_at)}${locationText ? `\n${locationText}` : ''}`,
           tag: 'fmr-active-parking'
         });
+        notification.onclick = () => {
+          try {
+            notification.close();
+          } catch {
+            // no-op
+          }
+          window.focus();
+        };
       } catch {
         // ignore notification delivery failures
       }
@@ -1482,9 +1484,14 @@ function ActiveParkingCard({
 
   return (
     <div className="stack">
-      <p className="small-meta">
-        Started {formatDateTime(parking.started_at)}. Active {formatActiveDuration(parking.started_at, clockMs)}.
-      </p>
+      <div className="parking-session-metrics" aria-label="Parking session timing">
+        <span className="parking-session-label">Started:</span>
+        <span className="parking-session-value">{formatDateTime(parking.started_at)}</span>
+        <span className="parking-session-label">Active:</span>
+        <strong className="parking-session-value parking-session-active">
+          {formatActiveDuration(parking.started_at, clockMs)}
+        </strong>
+      </div>
 
       {hasLocation ? (
         <>
