@@ -67,6 +67,7 @@ Single-page React app with feature sections:
 - Park-now start accepts either a valid location pair or note/photo evidence, allowing garage use when GPS is unavailable
 - Park-now requires a resolved physical `location_label` when coordinates are saved (coordinate-style labels are rejected)
 - Home active state (`You are parked`) shows start timestamp, running duration, optional location map, notes, and thumbnails until user confirms `End parking`
+- Parking thumbnails (home capture, active parking, history details) open a full-size preview modal on tap/click
 - Active parking session is persisted per user in browser storage so app restarts restore the in-progress state
 - Active parking can emit browser notifications with parked duration when notification permission is granted
 - History cards use expandable (`More info`/`Close`) details with OpenStreetMap embed preview, saved location text, a `More details` note section, photo thumbnails, and route/actions sections

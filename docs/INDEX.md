@@ -19,7 +19,7 @@ This is the project memory entrypoint for engineers and agents.
 - Home capture uses locate (GPS + reverse place lookup) with explicit no-reception state and 3 photo capture slots with previews (in-app camera capture + gallery fallback); note/photo fallback supports no-GPS garage saves
 - Home switches to `You are parked` after start, showing start date/time, running duration, optional map, notes, thumbnails, and `End parking` confirmation
 - Active parking survives app close/reopen via local persistence and can emit browser notifications while parked
-- History uses expandable record cards (`More info`/`Close`) with map preview, location text, photos, and direction links
+- History uses expandable record cards (`More info`/`Close`) with map preview, location text, photos, and direction links; photo thumbnails open full-size on tap/click
 - Coordinates with coordinate-style labels are blocked by API validation to keep stored addresses human-readable
 - Top app bar includes account menu (signed-in identity + sign-out)
 - Settings profile includes password change, theme switcher, theme-aware accent color presets, and MFA controls

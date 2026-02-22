@@ -91,6 +91,7 @@ Endpoints:
 - On failure, the UI shows `No reception`; save is still allowed when note and/or photos are provided.
 - Photos are handled via 3 capture slots; each slot is an empty action button or an image thumbnail that can be retaken/removed.
 - Camera capture prefers an in-app camera modal (`getUserMedia`) to avoid external camera-app round trips on memory-constrained mobile browsers; gallery/file-picker fallback remains available.
+- Any parking photo thumbnail can be tapped/clicked to open a full-size preview modal.
 
 ## Multi-user behavior
 

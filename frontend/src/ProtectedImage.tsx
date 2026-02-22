@@ -6,9 +6,10 @@ interface ProtectedImageProps {
   token: string;
   path: string;
   alt: string;
+  onPreview?: (src: string, alt: string) => void;
 }
 
-export function ProtectedImage({ token, path, alt }: ProtectedImageProps): JSX.Element {
+export function ProtectedImage({ token, path, alt, onPreview }: ProtectedImageProps): JSX.Element {
   const [src, setSrc] = useState<string>('');
 
   useEffect(() => {
@@ -46,6 +47,20 @@ export function ProtectedImage({ token, path, alt }: ProtectedImageProps): JSX.E
 
   if (!src) {
     return <div className="photo-placeholder">Loading image...</div>;
+  }
+
+  if (onPreview) {
+    return (
+      <button
+        className="photo-thumb-button"
+        type="button"
+        onClick={() => {
+          onPreview(src, alt);
+        }}
+      >
+        <img className="photo-thumb" src={src} alt={alt} loading="lazy" />
+      </button>
+    );
   }
 
   return <img className="photo-thumb" src={src} alt={alt} loading="lazy" />;

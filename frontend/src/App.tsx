@@ -89,6 +89,10 @@ type ActiveParkingSession = {
   note: string | null;
   photos: ActiveParkingPhoto[];
 };
+type ExpandedPhoto = {
+  src: string;
+  alt: string;
+};
 
 function normalizeUsernameInput(value: string): string {
   return value.trim().toLowerCase();
@@ -1192,6 +1196,7 @@ function ParkNowCard({
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraBusy, setCameraBusy] = useState(false);
   const [cameraError, setCameraError] = useState('');
+  const [expandedPhoto, setExpandedPhoto] = useState<ExpandedPhoto | null>(null);
   const [locating, setLocating] = useState(false);
   const [saving, setSaving] = useState(false);
   const canUseInAppCamera = window.isSecureContext && typeof navigator.mediaDevices?.getUserMedia === 'function';
@@ -1484,7 +1489,14 @@ function ParkNowCard({
                         className="capture-thumb-button"
                         type="button"
                         onClick={() => {
-                          openCaptureForSlot(index);
+                          const src = previewUrls[index];
+                          if (!src) {
+                            return;
+                          }
+                          setExpandedPhoto({
+                            src,
+                            alt: `Selected parking photo ${index + 1}`
+                          });
                         }}
                       >
                         <div className="capture-thumb">
@@ -1637,7 +1649,68 @@ function ParkNowCard({
           </section>
         </div>
       ) : null}
+
+      <PhotoLightbox
+        photo={expandedPhoto}
+        onClose={() => {
+          setExpandedPhoto(null);
+        }}
+      />
     </>
+  );
+}
+
+function PhotoLightbox({
+  photo,
+  onClose
+}: {
+  photo: ExpandedPhoto | null;
+  onClose: () => void;
+}): JSX.Element | null {
+  useEffect(() => {
+    if (!photo) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [photo, onClose]);
+
+  if (!photo) {
+    return null;
+  }
+
+  return (
+    <div
+      className="otp-modal-backdrop photo-lightbox-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Photo preview"
+      onClick={onClose}
+    >
+      <section
+        className="panel photo-lightbox"
+        onClick={(event) => {
+          event.stopPropagation();
+        }}
+      >
+        <div className="photo-lightbox-header">
+          <h2>Photo preview</h2>
+          <button className="btn secondary tiny" type="button" onClick={onClose}>
+            Close
+          </button>
+        </div>
+        <img className="photo-lightbox-image" src={photo.src} alt={`${photo.alt} (full size)`} />
+      </section>
+    </div>
   );
 }
 
@@ -1653,6 +1726,7 @@ function ActiveParkingCard({
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [ending, setEnding] = useState(false);
   const [clockMs, setClockMs] = useState(Date.now());
+  const [expandedPhoto, setExpandedPhoto] = useState<ExpandedPhoto | null>(null);
   const hasLocation = parking.latitude !== null && parking.longitude !== null;
 
   useEffect(() => {
@@ -1700,7 +1774,19 @@ function ActiveParkingCard({
       {parking.photos.length > 0 ? (
         <div className="photo-grid">
           {parking.photos.map((photo) => (
-            <img key={photo.id} className="photo-thumb" src={photo.data_url} alt="Parking photo evidence" />
+            <button
+              key={photo.id}
+              className="photo-thumb-button"
+              type="button"
+              onClick={() => {
+                setExpandedPhoto({
+                  src: photo.data_url,
+                  alt: 'Parking photo evidence'
+                });
+              }}
+            >
+              <img className="photo-thumb" src={photo.data_url} alt="Parking photo evidence" />
+            </button>
           ))}
         </div>
       ) : null}
@@ -1739,6 +1825,13 @@ function ActiveParkingCard({
           </div>
         </section>
       )}
+
+      <PhotoLightbox
+        photo={expandedPhoto}
+        onClose={() => {
+          setExpandedPhoto(null);
+        }}
+      />
     </div>
   );
 }
@@ -1789,6 +1882,7 @@ function RecordCard({
   onDelete: () => Promise<void>;
 }): JSX.Element {
   const [expanded, setExpanded] = useState(false);
+  const [expandedPhoto, setExpandedPhoto] = useState<ExpandedPhoto | null>(null);
   const hasLocation = record.latitude !== null && record.longitude !== null;
   const locationSummary = recordLocationSummary(record);
 
@@ -1821,7 +1915,15 @@ function RecordCard({
           {record.photos.length > 0 ? (
             <div className="photo-grid">
               {record.photos.map((photo) => (
-                <ProtectedImage key={photo.id} token={token} path={photo.download_url} alt="Parking photo evidence" />
+                <ProtectedImage
+                  key={photo.id}
+                  token={token}
+                  path={photo.download_url}
+                  alt="Parking photo evidence"
+                  onPreview={(src, alt) => {
+                    setExpandedPhoto({ src, alt });
+                  }}
+                />
               ))}
             </div>
           ) : (
@@ -1896,6 +1998,13 @@ function RecordCard({
           </button>
         </div>
       )}
+
+      <PhotoLightbox
+        photo={expandedPhoto}
+        onClose={() => {
+          setExpandedPhoto(null);
+        }}
+      />
     </article>
   );
 }

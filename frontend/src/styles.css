@@ -599,6 +599,15 @@ button,
   gap: 0.5rem;
 }
 
+.photo-thumb-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 0.55rem;
+  overflow: hidden;
+}
+
 .photo-frame {
   display: grid;
   gap: 0.4rem;
@@ -619,6 +628,38 @@ button,
   color: var(--muted);
   font-size: 0.75rem;
   padding: 0.4rem;
+}
+
+.photo-lightbox-backdrop {
+  z-index: 1600;
+}
+
+.photo-lightbox {
+  width: min(52rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  display: grid;
+  gap: 0.7rem;
+}
+
+.photo-lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.photo-lightbox-header h2 {
+  margin: 0;
+}
+
+.photo-lightbox-image {
+  display: block;
+  width: 100%;
+  max-height: calc(100vh - 9.5rem);
+  object-fit: contain;
+  border-radius: 0.65rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
 }
 
 .checkbox {

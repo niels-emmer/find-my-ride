@@ -602,6 +602,13 @@ describe('App tabs and settings', () => {
     fireEvent.input(firstPhotoInput, { target: { files: [file] } });
 
     expect(await screen.findByAltText('Selected parking photo 1')).toBeInTheDocument();
+    fireEvent.click(screen.getByAltText('Selected parking photo 1'));
+    const capturePreviewDialog = await screen.findByRole('dialog', { name: 'Photo preview' });
+    expect(within(capturePreviewDialog).getByAltText('Selected parking photo 1 (full size)')).toBeInTheDocument();
+    fireEvent.click(within(capturePreviewDialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Photo preview' })).not.toBeInTheDocument();
+    });
 
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(screen.getByLabelText('Capture photo 1')).toBeInTheDocument();
@@ -659,7 +666,11 @@ describe('App tabs and settings', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
 
     expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
-    expect(await screen.findByAltText('Parking photo evidence')).toBeInTheDocument();
+    const activePhoto = await screen.findByAltText('Parking photo evidence');
+    expect(activePhoto).toBeInTheDocument();
+    fireEvent.click(activePhoto);
+    const activePreviewDialog = await screen.findByRole('dialog', { name: 'Photo preview' });
+    expect(within(activePreviewDialog).getByAltText('Parking photo evidence (full size)')).toBeInTheDocument();
   });
 
   it('syncs selected camera file when browser returns focus without change callback', async () => {
@@ -740,7 +751,15 @@ describe('App tabs and settings', () => {
     expect(await screen.findByTitle('OpenStreetMap preview of parked location')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'More details' })).toBeInTheDocument();
     expect(screen.getByText('Level B2 near west elevator')).toBeInTheDocument();
-    expect(await screen.findByAltText('Parking photo evidence')).toBeInTheDocument();
+    const historyPhoto = await screen.findByAltText('Parking photo evidence');
+    expect(historyPhoto).toBeInTheDocument();
+    fireEvent.click(historyPhoto);
+    const historyPreviewDialog = await screen.findByRole('dialog', { name: 'Photo preview' });
+    expect(within(historyPreviewDialog).getByAltText('Parking photo evidence (full size)')).toBeInTheDocument();
+    fireEvent.click(within(historyPreviewDialog).getByRole('button', { name: 'Close' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Photo preview' })).not.toBeInTheDocument();
+    });
     expect(screen.getByRole('link', { name: 'Google Maps' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'OpenStreetMap' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
