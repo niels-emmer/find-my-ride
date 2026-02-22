@@ -41,6 +41,20 @@ Docs are available in `docs/INDEX.md` (source) and `site/INDEX/index.html` (gene
 - Session auth with rotating refresh tokens (HttpOnly cookie) + automatic access-token refresh/retry
 - Light/dark/system theme support
 
+## Screenshots
+
+### Home
+
+![Home screen](docs/assets/screenshots/home.png)
+
+### History
+
+![History screen](docs/assets/screenshots/history.png)
+
+### Settings
+
+![Settings screen](docs/assets/screenshots/settings.png)
+
 ## Quick start (Docker)
 
 1. Copy env template:
