@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="http://localhost:8001/INDEX/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Home - find-my-ride docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Home";
+        var mkdocs_page_input_path = "INDEX.md";
+        var mkdocs_page_url = "/INDEX/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> find-my-ride docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Home</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#current-status">Current status</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#memory-sections">Memory sections</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#source-of-truth-policy">Source-of-truth policy</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../decisions/">Decisions</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../dev-guide/">Dev Guide</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api-reference/">API Reference</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../security/">Security</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">find-my-ride docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Home</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="find-my-ride-memory-index">find-my-ride memory index<a class="headerlink" href="#find-my-ride-memory-index" title="Permanent link">&para;</a></h1>
+<p>This is the project memory entrypoint for engineers and agents.</p>
+<h2 id="current-status">Current status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Stack scaffolded: React PWA frontend + FastAPI backend + PostgreSQL + Docker Compose</li>
+<li>Auth implemented: bootstrap admin, login, open self-register (no moderation), optional TOTP MFA</li>
+<li>Username normalization/validation is enforced across auth and admin user-management endpoints</li>
+<li>Password policy enforced across create/reset/change flows (8-128 chars with uppercase/lowercase/digit)</li>
+<li>Session auth hardened: short-lived access tokens + rotating refresh tokens in HttpOnly cookies</li>
+<li>Frontend auto-restores sessions via refresh cookie at app start and retries once on token-expiry <code>401</code></li>
+<li>Refresh sessions are revoked on logout, self password change, and admin password reset</li>
+<li>PWA update path hardened: service worker cache/version is keyed by <code>APP_VERSION</code> (release tag) with network-first navigation fetch</li>
+<li>Login UX uses a two-phase MFA flow: username/password first, OTP modal only when required</li>
+<li>MFA setup renders a QR code (from provisioning URI) above the secret for authenticator app scan</li>
+<li>Parking workflow implemented: start sticky active parking sessions (location or note/photo evidence required), then end/save to history with optional geo + note + up to 3 photos</li>
+<li>Frontend navigation implemented as fixed bottom tabs: home, history, settings</li>
+<li>Home capture uses locate (GPS + reverse place lookup) with explicit no-reception state and 3 photo capture slots with previews (in-app camera capture + gallery fallback); note/photo fallback supports no-GPS garage saves</li>
+<li>Home switches to <code>You are parked</code> after start, showing start date/time, running duration, optional map, notes, thumbnails, <code>Take me there</code> map links (when location exists), and <code>End parking</code> under <code>Actions</code></li>
+<li>Active parking survives app close/reopen via local persistence and can emit browser notifications while parked</li>
+<li>History uses expandable record cards (<code>More info</code>/<code>Close</code>) with map preview, location text, photos, and direction links; photo thumbnails open full-size on tap/click</li>
+<li>Coordinates with coordinate-style labels are blocked by API validation to keep stored addresses human-readable</li>
+<li>Top app bar includes account menu (signed-in identity + sign-out)</li>
+<li>Settings profile includes password change, theme switcher, theme-aware accent color presets, and MFA controls</li>
+<li>Admin panel supports add/edit/delete user management (excluding self-actions) with role/password updates via modal</li>
+<li>Docker dev frontend API path uses <code>/api</code> + Vite proxy target for local-network phone access</li>
+<li>Access control implemented: per-user data isolation with admin override</li>
+<li>Backend automated API tests implemented for auth, MFA, users, records, ACL, and photo flows</li>
+<li>Frontend automated tests implemented for tab navigation and settings/profile/admin UI behavior</li>
+<li>Dependency security scanning workflow implemented (<code>make security-scan</code>)</li>
+<li>Documentation system active with MkDocs</li>
+</ul>
+<h2 id="memory-sections">Memory sections<a class="headerlink" href="#memory-sections" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../architecture/">Architecture</a></li>
+<li><a href="../decisions/">Decisions</a></li>
+<li><a href="../dev-guide/">Dev Guide</a></li>
+<li><a href="../api-reference/">API Reference</a></li>
+<li><a href="../security/">Security</a></li>
+</ul>
+<h2 id="source-of-truth-policy">Source-of-truth policy<a class="headerlink" href="#source-of-truth-policy" title="Permanent link">&para;</a></h2>
+<p>Code is the source of truth. If docs conflict with code, update docs immediately.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../architecture/" class="btn btn-neutral float-right" title="Architecture">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+      <span><a href="../architecture/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

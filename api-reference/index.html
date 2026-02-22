@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="http://localhost:8001/api-reference/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>API Reference - find-my-ride docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "API Reference";
+        var mkdocs_page_input_path = "api-reference.md";
+        var mkdocs_page_url = "/api-reference/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> find-my-ride docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../INDEX/">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../decisions/">Decisions</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../dev-guide/">Dev Guide</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">API Reference</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#system">System</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#get-systemstatus">GET /system/status</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#auth">Auth</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authbootstrap">POST /auth/bootstrap</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authregister">POST /auth/register</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authlogin">POST /auth/login</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authrefresh">POST /auth/refresh</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authlogout">POST /auth/logout</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get-authme">GET /auth/me</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authchange-password">POST /auth/change-password</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authmfasetup">POST /auth/mfa/setup</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authmfaverify">POST /auth/mfa/verify</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-authmfadisable">POST /auth/mfa/disable</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#users-admin-only">Users (admin only)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#get-users">GET /users</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-users">POST /users</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#patch-usersuser_id">PATCH /users/{user_id}</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#delete-usersuser_id">DELETE /users/{user_id}</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#parking">Parking</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#post-parkingrecords">POST /parking/records</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get-parkingrecords">GET /parking/records</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get-parkingrecordslatest">GET /parking/records/latest</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#patch-parkingrecordsrecord_id">PATCH /parking/records/{record_id}</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#delete-parkingrecordsrecord_id">DELETE /parking/records/{record_id}</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#post-parkingrecordsrecord_idphotos">POST /parking/records/{record_id}/photos</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#delete-parkingphotosphoto_id">DELETE /parking/photos/{photo_id}</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get-parkingphotosphoto_iddownload">GET /parking/photos/{photo_id}/download</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#response-objects">Response objects</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#userout">UserOut</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#photoout">PhotoOut</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#parkingrecordout">ParkingRecordOut</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../security/">Security</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">find-my-ride docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
+<p>Base path: <code>/api</code></p>
+<p>Auth style:</p>
+<ul>
+<li>Access token: <code>Authorization: Bearer &lt;token&gt;</code></li>
+<li>Refresh token: HttpOnly cookie (<code>REFRESH_TOKEN_COOKIE_NAME</code>, default <code>fmr_refresh_token</code>) scoped to <code>/api/auth</code></li>
+</ul>
+<h2 id="system">System<a class="headerlink" href="#system" title="Permanent link">&para;</a></h2>
+<h3 id="get-systemstatus"><code>GET /system/status</code><a class="headerlink" href="#get-systemstatus" title="Permanent link">&para;</a></h3>
+<p>Returns:</p>
+<ul>
+<li><code>has_users: boolean</code></li>
+<li><code>allow_self_register: boolean</code> (currently always <code>true</code>)</li>
+</ul>
+<h2 id="auth">Auth<a class="headerlink" href="#auth" title="Permanent link">&para;</a></h2>
+<h3 id="post-authbootstrap"><code>POST /auth/bootstrap</code><a class="headerlink" href="#post-authbootstrap" title="Permanent link">&para;</a></h3>
+<p>Create first admin user (only when no users exist).</p>
+<p>Request body:</p>
+<ul>
+<li><code>username: string</code> (3-64 chars; normalized lowercase; allowed chars: letters, digits, <code>.</code>, <code>_</code>, <code>-</code>)</li>
+<li><code>password: string</code> (8-128 chars, must include uppercase/lowercase/digit)</li>
+</ul>
+<p>Response:</p>
+<ul>
+<li><code>access_token</code></li>
+<li><code>token_type</code></li>
+<li><code>user</code></li>
+<li>Sets refresh cookie</li>
+</ul>
+<h3 id="post-authregister"><code>POST /auth/register</code><a class="headerlink" href="#post-authregister" title="Permanent link">&para;</a></h3>
+<p>Self-register user (open by default; no moderation gate).</p>
+<p>Request body:</p>
+<ul>
+<li><code>username</code> (same policy as bootstrap)</li>
+<li><code>password</code> (same policy as bootstrap)</li>
+</ul>
+<p>Response: token + user object.
+Also sets refresh cookie.</p>
+<h3 id="post-authlogin"><code>POST /auth/login</code><a class="headerlink" href="#post-authlogin" title="Permanent link">&para;</a></h3>
+<p>Request body:</p>
+<ul>
+<li><code>username</code> (same policy as bootstrap)</li>
+<li><code>password</code></li>
+<li><code>otp_code</code> (required if MFA enabled)</li>
+</ul>
+<p>Response: token + user object.
+Also sets refresh cookie.</p>
+<p>Frontend client flow:</p>
+<ul>
+<li>Submit username/password first.</li>
+<li>If response detail indicates MFA code is required, prompt for OTP and retry the same endpoint with <code>otp_code</code>.</li>
+</ul>
+<h3 id="post-authrefresh"><code>POST /auth/refresh</code><a class="headerlink" href="#post-authrefresh" title="Permanent link">&para;</a></h3>
+<p>Rotate refresh token cookie and issue a new access token.</p>
+<p>Request:</p>
+<ul>
+<li>No JSON body</li>
+<li>Requires refresh cookie</li>
+</ul>
+<p>Response:</p>
+<ul>
+<li><code>access_token</code></li>
+<li><code>token_type</code></li>
+<li><code>user</code></li>
+<li>Sets rotated refresh cookie</li>
+</ul>
+<p>Failure:</p>
+<ul>
+<li><code>401</code> if refresh token is missing/invalid/revoked/expired</li>
+</ul>
+<h3 id="post-authlogout"><code>POST /auth/logout</code><a class="headerlink" href="#post-authlogout" title="Permanent link">&para;</a></h3>
+<p>Revoke the current refresh token and clear refresh cookie.</p>
+<p>Request:</p>
+<ul>
+<li>No JSON body</li>
+</ul>
+<p>Response:</p>
+<ul>
+<li><code>message</code></li>
+</ul>
+<h3 id="get-authme"><code>GET /auth/me</code><a class="headerlink" href="#get-authme" title="Permanent link">&para;</a></h3>
+<p>Returns authenticated user profile.</p>
+<h3 id="post-authchange-password"><code>POST /auth/change-password</code><a class="headerlink" href="#post-authchange-password" title="Permanent link">&para;</a></h3>
+<p>Change password for the authenticated user.</p>
+<p>Request body:</p>
+<ul>
+<li><code>current_password</code></li>
+<li><code>new_password</code> (8-128 chars, must include uppercase/lowercase/digit)</li>
+</ul>
+<p>Response:</p>
+<ul>
+<li><code>message</code></li>
+</ul>
+<p>Behavior:</p>
+<ul>
+<li>Revokes all active refresh tokens for the current user.</li>
+</ul>
+<h3 id="post-authmfasetup"><code>POST /auth/mfa/setup</code><a class="headerlink" href="#post-authmfasetup" title="Permanent link">&para;</a></h3>
+<p>Creates TOTP secret and returns:</p>
+<ul>
+<li><code>secret</code></li>
+<li><code>otpauth_url</code></li>
+</ul>
+<p>Frontend client uses <code>otpauth_url</code> to generate a local QR code for authenticator app scan.</p>
+<h3 id="post-authmfaverify"><code>POST /auth/mfa/verify</code><a class="headerlink" href="#post-authmfaverify" title="Permanent link">&para;</a></h3>
+<p>Request body:</p>
+<ul>
+<li><code>code</code></li>
+</ul>
+<p>Enables MFA when code is valid.</p>
+<h3 id="post-authmfadisable"><code>POST /auth/mfa/disable</code><a class="headerlink" href="#post-authmfadisable" title="Permanent link">&para;</a></h3>
+<p>Request body:</p>
+<ul>
+<li><code>code</code></li>
+</ul>
+<p>Disables MFA (requires valid code if currently enabled).</p>
+<h2 id="users-admin-only">Users (admin only)<a class="headerlink" href="#users-admin-only" title="Permanent link">&para;</a></h2>
+<h3 id="get-users"><code>GET /users</code><a class="headerlink" href="#get-users" title="Permanent link">&para;</a></h3>
+<p>Returns list of users.</p>
+<h3 id="post-users"><code>POST /users</code><a class="headerlink" href="#post-users" title="Permanent link">&para;</a></h3>
+<p>Create user.</p>
+<p>Request body:</p>
+<ul>
+<li><code>username</code> (same policy as bootstrap)</li>
+<li><code>password</code> (same policy as bootstrap)</li>
+<li><code>is_admin: boolean</code></li>
+</ul>
+<h3 id="patch-usersuser_id"><code>PATCH /users/{user_id}</code><a class="headerlink" href="#patch-usersuser_id" title="Permanent link">&para;</a></h3>
+<p>Update an existing user (admin only).</p>
+<p>Request body (at least one required):</p>
+<ul>
+<li><code>password</code> (8-128 chars, must include uppercase/lowercase/digit) to reset password</li>
+<li><code>is_admin: boolean</code> to change role</li>
+</ul>
+<p>Rules:</p>
+<ul>
+<li>Admin cannot edit self via this endpoint.</li>
+<li>API prevents removing the last admin role.</li>
+<li>If password is changed, all active refresh tokens for that user are revoked.</li>
+</ul>
+<h3 id="delete-usersuser_id"><code>DELETE /users/{user_id}</code><a class="headerlink" href="#delete-usersuser_id" title="Permanent link">&para;</a></h3>
+<p>Delete an existing user (admin only).</p>
+<p>Rules:</p>
+<ul>
+<li>Admin cannot delete self via this endpoint.</li>
+<li>API prevents deleting the last admin account.</li>
+</ul>
+<h2 id="parking">Parking<a class="headerlink" href="#parking" title="Permanent link">&para;</a></h2>
+<h3 id="post-parkingrecords"><code>POST /parking/records</code><a class="headerlink" href="#post-parkingrecords" title="Permanent link">&para;</a></h3>
+<p>Create parking record with multipart form-data.</p>
+<p>Form fields:</p>
+<ul>
+<li><code>latitude</code> (optional, must be sent with <code>longitude</code>)</li>
+<li><code>longitude</code> (optional, must be sent with <code>latitude</code>)</li>
+<li><code>location_label</code> (required when location pair is provided; must be a physical address, not coordinate text)</li>
+<li><code>parked_at</code> (optional ISO datetime)</li>
+<li><code>note</code> (optional)</li>
+<li><code>photos</code> (optional repeated file field, max 3)</li>
+</ul>
+<p>Validation rules:</p>
+<ul>
+<li>Provide both <code>latitude</code> and <code>longitude</code>, or neither.</li>
+<li>Record creation requires at least one of:</li>
+<li>location pair (<code>latitude</code> + <code>longitude</code>)</li>
+<li>non-empty <code>note</code></li>
+<li>at least one <code>photos</code> file</li>
+<li>When a location pair is sent, <code>location_label</code> must be present and non-coordinate (physical address).</li>
+<li>If location is omitted, <code>location_label</code> is cleared/ignored.</li>
+<li>Text fields (<code>location_label</code>, <code>note</code>) reject control characters.</li>
+<li>Stored/returned <code>location_label</code> values are normalized as street-first address text when geocoding succeeds.</li>
+</ul>
+<p>Photo upload constraints:</p>
+<ul>
+<li>max size per file = <code>MAX_PHOTO_SIZE_MB</code> (default 8 MB)</li>
+<li>allowed content types = <code>image/jpeg</code>, <code>image/jpg</code>, <code>image/pjpeg</code>, <code>image/png</code>, <code>image/webp</code>, <code>image/heic</code>, <code>image/heic-sequence</code>, <code>image/heif</code>, <code>image/heif-sequence</code>, <code>image/avif</code></li>
+</ul>
+<p>Returns <code>ParkingRecordOut</code>.</p>
+<h3 id="get-parkingrecords"><code>GET /parking/records</code><a class="headerlink" href="#get-parkingrecords" title="Permanent link">&para;</a></h3>
+<p>Query params:</p>
+<ul>
+<li><code>owner_id</code> (admin-only UUID filter)</li>
+<li><code>limit</code> (default 50, max 200)</li>
+</ul>
+<p>Returns list of <code>ParkingRecordOut</code> ordered by newest parked time.</p>
+<h3 id="get-parkingrecordslatest"><code>GET /parking/records/latest</code><a class="headerlink" href="#get-parkingrecordslatest" title="Permanent link">&para;</a></h3>
+<p>Query params:</p>
+<ul>
+<li><code>owner_id</code> (admin-only UUID filter)</li>
+</ul>
+<p>Returns latest <code>ParkingRecordOut</code> or <code>null</code>.</p>
+<h3 id="patch-parkingrecordsrecord_id"><code>PATCH /parking/records/{record_id}</code><a class="headerlink" href="#patch-parkingrecordsrecord_id" title="Permanent link">&para;</a></h3>
+<p>Request JSON (all optional):</p>
+<ul>
+<li><code>latitude</code></li>
+<li><code>longitude</code></li>
+<li><code>location_label</code></li>
+<li><code>note</code></li>
+<li><code>parked_at</code></li>
+</ul>
+<p>Validation rules:</p>
+<ul>
+<li>If updating location, provide both <code>latitude</code> and <code>longitude</code> together.</li>
+<li>To clear location, set both <code>latitude</code> and <code>longitude</code> to <code>null</code>.</li>
+<li>Clearing location also clears <code>location_label</code>.</li>
+<li>When updating to non-null coordinates, include <code>location_label</code> with a physical address (not coordinate text).</li>
+</ul>
+<p>Returns updated record.</p>
+<h3 id="delete-parkingrecordsrecord_id"><code>DELETE /parking/records/{record_id}</code><a class="headerlink" href="#delete-parkingrecordsrecord_id" title="Permanent link">&para;</a></h3>
+<p>Deletes a record and linked photos.</p>
+<h3 id="post-parkingrecordsrecord_idphotos"><code>POST /parking/records/{record_id}/photos</code><a class="headerlink" href="#post-parkingrecordsrecord_idphotos" title="Permanent link">&para;</a></h3>
+<p>Add additional photos (multipart form-data field <code>photos</code>).</p>
+<h3 id="delete-parkingphotosphoto_id"><code>DELETE /parking/photos/{photo_id}</code><a class="headerlink" href="#delete-parkingphotosphoto_id" title="Permanent link">&para;</a></h3>
+<p>Delete a specific photo.</p>
+<h3 id="get-parkingphotosphoto_iddownload"><code>GET /parking/photos/{photo_id}/download</code><a class="headerlink" href="#get-parkingphotosphoto_iddownload" title="Permanent link">&para;</a></h3>
+<p>Download photo if caller has access.</p>
+<h2 id="response-objects">Response objects<a class="headerlink" href="#response-objects" title="Permanent link">&para;</a></h2>
+<h3 id="userout"><code>UserOut</code><a class="headerlink" href="#userout" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>username</code></li>
+<li><code>is_admin</code></li>
+<li><code>mfa_enabled</code></li>
+<li><code>created_at</code></li>
+</ul>
+<h3 id="photoout"><code>PhotoOut</code><a class="headerlink" href="#photoout" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>file_name</code></li>
+<li><code>content_type</code></li>
+<li><code>file_size</code></li>
+<li><code>created_at</code></li>
+<li><code>download_url</code></li>
+</ul>
+<h3 id="parkingrecordout"><code>ParkingRecordOut</code><a class="headerlink" href="#parkingrecordout" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>id</code></li>
+<li><code>owner_id</code></li>
+<li><code>latitude</code> (<code>number | null</code>)</li>
+<li><code>longitude</code> (<code>number | null</code>)</li>
+<li><code>location_label</code> (<code>string | null</code>)</li>
+<li><code>note</code></li>
+<li><code>parked_at</code></li>
+<li><code>created_at</code></li>
+<li><code>updated_at</code></li>
+<li><code>photos: PhotoOut[]</code></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../dev-guide/" class="btn btn-neutral float-left" title="Dev Guide"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../security/" class="btn btn-neutral float-right" title="Security">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../dev-guide/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../security/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

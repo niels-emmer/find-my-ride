@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="http://localhost:8001/decisions/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Decisions - find-my-ride docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Decisions";
+        var mkdocs_page_input_path = "decisions.md";
+        var mkdocs_page_url = "/decisions/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> find-my-ride docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../INDEX/">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Decisions</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#adr-001-backend-framework-fastapi">ADR-001: Backend framework = FastAPI</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-002-data-store-postgresql-sqlalchemy-models">ADR-002: Data store = PostgreSQL + SQLAlchemy models</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-003-media-storage-filesystem-volume">ADR-003: Media storage = filesystem volume</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-004-access-control-model">ADR-004: Access control model</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-005-mfa-model-totp">ADR-005: MFA model = TOTP</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-006-frontend-packaging-vite-pwa">ADR-006: Frontend packaging = Vite PWA</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-007-bootstrap-admin-pattern">ADR-007: Bootstrap admin pattern</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-008-test-gated-delivery">ADR-008: Test-gated delivery</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-009-dev-api-routing-same-origin-api-with-proxy">ADR-009: Dev API routing = same-origin /api with proxy</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-010-home-capture-ux-explicit-locate-state-capture-slots">ADR-010: Home capture UX = explicit locate state + capture slots</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-011-location-optional-with-evidence-fallback">ADR-011: Location optional with evidence fallback</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-012-persist-location-label-expandable-details-cards">ADR-012: Persist location label + expandable details cards</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-013-address-label-quality-gate">ADR-013: Address label quality gate</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-014-local-bundled-hero-background-image">ADR-014: Local bundled hero background image</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-015-open-self-registration-split-auth-modes">ADR-015: Open self-registration + split auth modes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-016-two-phase-mfa-login-ux">ADR-016: Two-phase MFA login UX</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-017-local-qr-generation-for-mfa-setup">ADR-017: Local QR generation for MFA setup</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-018-admin-user-lifecycle-management-in-app">ADR-018: Admin user lifecycle management in-app</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-019-rotating-refresh-token-sessions">ADR-019: Rotating refresh-token sessions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-020-centralized-api-input-validation-policy">ADR-020: Centralized API input validation policy</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-021-replace-plugin-based-pwa-build-chain-with-local-manifestservice-worker">ADR-021: Replace plugin-based PWA build chain with local manifest/service worker</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-022-pwa-cache-versioning-keyed-by-release-tag">ADR-022: PWA cache versioning keyed by release tag</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-023-client-side-accent-color-presets-for-ui-controls">ADR-023: Client-side accent color presets for UI controls</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-024-surface-release-metadata-in-settings-ui">ADR-024: Surface release metadata in settings UI</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-025-sticky-active-parking-session-on-home">ADR-025: Sticky active parking session on home</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../dev-guide/">Dev Guide</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api-reference/">API Reference</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../security/">Security</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">find-my-ride docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Decisions</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="decisions">Decisions<a class="headerlink" href="#decisions" title="Permanent link">&para;</a></h1>
+<h2 id="adr-001-backend-framework-fastapi">ADR-001: Backend framework = FastAPI<a class="headerlink" href="#adr-001-backend-framework-fastapi" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Use FastAPI + SQLAlchemy for API implementation.</li>
+<li>Why: Fast iteration, strong typing, clean dependency injection for auth/ACL checks.</li>
+</ul>
+<h2 id="adr-002-data-store-postgresql-sqlalchemy-models">ADR-002: Data store = PostgreSQL + SQLAlchemy models<a class="headerlink" href="#adr-002-data-store-postgresql-sqlalchemy-models" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Persist users, parking records, and photo metadata in PostgreSQL.</li>
+<li>Why: Relational integrity and clear ownership constraints.</li>
+</ul>
+<h2 id="adr-003-media-storage-filesystem-volume">ADR-003: Media storage = filesystem volume<a class="headerlink" href="#adr-003-media-storage-filesystem-volume" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Store image payloads in <code>data/uploads</code>, keep metadata paths in DB.</li>
+<li>Why: Simpler local and VPS deployment with Docker volumes.</li>
+</ul>
+<h2 id="adr-004-access-control-model">ADR-004: Access control model<a class="headerlink" href="#adr-004-access-control-model" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Non-admin users can only access their own records/photos; admin can access all.</li>
+<li>Why: Matches explicit product requirement for multi-user isolation with admin override.</li>
+</ul>
+<h2 id="adr-005-mfa-model-totp">ADR-005: MFA model = TOTP<a class="headerlink" href="#adr-005-mfa-model-totp" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Implement optional per-user TOTP MFA setup/verify/disable.</li>
+<li>Why: Provides practical second factor support with broad authenticator compatibility.</li>
+</ul>
+<h2 id="adr-006-frontend-packaging-vite-pwa">ADR-006: Frontend packaging = Vite PWA<a class="headerlink" href="#adr-006-frontend-packaging-vite-pwa" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: superseded by ADR-021</li>
+<li>Decision: React + Vite with plugin-based PWA build pipeline.</li>
+<li>Why: Initially chosen for fast local development and installable app behavior on mobile.</li>
+</ul>
+<h2 id="adr-007-bootstrap-admin-pattern">ADR-007: Bootstrap admin pattern<a class="headerlink" href="#adr-007-bootstrap-admin-pattern" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: First account is created through <code>/api/auth/bootstrap</code> and is admin.</li>
+<li>Why: Satisfies requirement for initial admin creation without pre-seeding secrets in source.</li>
+</ul>
+<h2 id="adr-008-test-gated-delivery">ADR-008: Test-gated delivery<a class="headerlink" href="#adr-008-test-gated-delivery" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Treat validation as a completion gate for all code changes and require automated tests per functionality change.</li>
+<li>Why: Keeps code quality and regression resistance aligned with production-readiness and security goals.</li>
+</ul>
+<h2 id="adr-009-dev-api-routing-same-origin-api-with-proxy">ADR-009: Dev API routing = same-origin <code>/api</code> with proxy<a class="headerlink" href="#adr-009-dev-api-routing-same-origin-api-with-proxy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: In Docker development, frontend calls <code>/api</code> and Vite proxies to backend (<code>VITE_PROXY_TARGET</code>) instead of hardcoding <code>localhost</code> API URLs.</li>
+<li>Why: Allows local-network/mobile testing where <code>localhost</code> on the client device would otherwise break API connectivity.</li>
+</ul>
+<h2 id="adr-010-home-capture-ux-explicit-locate-state-capture-slots">ADR-010: Home capture UX = explicit locate state + capture slots<a class="headerlink" href="#adr-010-home-capture-ux-explicit-locate-state-capture-slots" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Replace manual latitude/longitude fields with explicit <code>Locate</code> flow (GPS + reverse place lookup / <code>No reception</code>) and use 3 camera-first photo slots with thumbnail preview/retake/remove controls.</li>
+<li>Why: Improves mobile ergonomics and reduces user error in garages/cities while keeping the save flow explicit.</li>
+</ul>
+<h2 id="adr-011-location-optional-with-evidence-fallback">ADR-011: Location optional with evidence fallback<a class="headerlink" href="#adr-011-location-optional-with-evidence-fallback" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Allow parking record creation without coordinates when a note and/or photos are provided; enforce latitude/longitude as an all-or-nothing pair.</li>
+<li>Why: Parking garages can block GPS, so save must still work with contextual evidence while preserving API data integrity.</li>
+</ul>
+<h2 id="adr-012-persist-location-label-expandable-details-cards">ADR-012: Persist location label + expandable details cards<a class="headerlink" href="#adr-012-persist-location-label-expandable-details-cards" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Persist reverse-geocoded place text on records (<code>location_label</code>) and render latest/history with a shared expandable card (<code>More info</code>/<code>Close</code>) that shows map preview, saved address text, photos, and map actions.</li>
+<li>Why: Improves scanability and avoids repeated geocoding lookups while giving a compact default list view with richer on-demand details.</li>
+</ul>
+<h2 id="adr-013-address-label-quality-gate">ADR-013: Address label quality gate<a class="headerlink" href="#adr-013-address-label-quality-gate" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Reject coordinate-style <code>location_label</code> values whenever coordinates are stored/updated and normalize accepted labels to street-first human-readable text.</li>
+<li>Why: Coordinates are retained for routing/map rendering, but end-user list/detail UX should consistently show readable physical location text.</li>
+</ul>
+<h2 id="adr-014-local-bundled-hero-background-image">ADR-014: Local bundled hero background image<a class="headerlink" href="#adr-014-local-bundled-hero-background-image" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Use a locally bundled parked-car background image (<code>frontend/public/images/parking-background-option-3.jpg</code>) from selected royalty-free source, rendered with theme-aware overlays.</li>
+<li>Why: Keeps visual identity aligned with app purpose while avoiding external runtime hotlink dependencies and preserving text readability.</li>
+</ul>
+<h2 id="adr-015-open-self-registration-split-auth-modes">ADR-015: Open self-registration + split auth modes<a class="headerlink" href="#adr-015-open-self-registration-split-auth-modes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Keep self-registration open (no moderation gate) and render logged-out auth as two explicit modes (<code>Sign in</code>/<code>Register</code>) under the standard top bar.</li>
+<li>Why: Matches product direction for immediate onboarding and provides a clearer mobile-first auth flow with space reserved for future banner content.</li>
+</ul>
+<h2 id="adr-016-two-phase-mfa-login-ux">ADR-016: Two-phase MFA login UX<a class="headerlink" href="#adr-016-two-phase-mfa-login-ux" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Keep login forms focused on username/password and trigger OTP entry in a second-step modal only when backend indicates MFA is required.</li>
+<li>Why: Reduces clutter for non-MFA users while preserving strong authentication for MFA-enabled accounts.</li>
+</ul>
+<h2 id="adr-017-local-qr-generation-for-mfa-setup">ADR-017: Local QR generation for MFA setup<a class="headerlink" href="#adr-017-local-qr-generation-for-mfa-setup" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Generate MFA setup QR code client-side from <code>otpauth_url</code> and render it above the secret.</li>
+<li>Why: Provides fast scan setup without depending on third-party QR services and keeps MFA provisioning data local to the app session.</li>
+</ul>
+<h2 id="adr-018-admin-user-lifecycle-management-in-app">ADR-018: Admin user lifecycle management in-app<a class="headerlink" href="#adr-018-admin-user-lifecycle-management-in-app" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Add admin-only user update/delete endpoints and an admin UI with split <code>Add users</code> / <code>Edit users</code> sections, including modal-based role/password changes.</li>
+<li>Why: Reduces operational friction for multi-user management while preserving guardrails (no self edit/delete via admin endpoints and no removal of last admin).</li>
+</ul>
+<h2 id="adr-019-rotating-refresh-token-sessions">ADR-019: Rotating refresh-token sessions<a class="headerlink" href="#adr-019-rotating-refresh-token-sessions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Keep short-lived JWT access tokens for API auth and add DB-backed rotating refresh tokens in HttpOnly cookies for session continuity.</li>
+<li>Why: Reduces re-login friction for PWA/mobile restarts while limiting long-lived bearer token exposure.</li>
+<li>Details:</li>
+<li>Refresh tokens are random high-entropy secrets and stored hashed (<code>sha256</code>) in DB.</li>
+<li><code>/api/auth/refresh</code> rotates token on every use and rejects invalid/replayed/expired tokens.</li>
+<li>Invalid/replayed refresh usage revokes active refresh sessions for that user.</li>
+<li>Logout revokes current refresh token; password changes revoke all refresh tokens for the user.</li>
+<li>Frontend auto-refreshes on startup and performs a single <code>401</code> retry after refresh.</li>
+</ul>
+<h2 id="adr-020-centralized-api-input-validation-policy">ADR-020: Centralized API input validation policy<a class="headerlink" href="#adr-020-centralized-api-input-validation-policy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Centralize username/password/text validation in backend and enforce it through auth/user/parking schemas/routes.</li>
+<li>Why: Prevent inconsistent endpoint behavior and reduce malformed/untrusted input reaching persistence/auth logic.</li>
+<li>Details:</li>
+<li>Usernames: normalized lowercase, 3-64 chars, restricted character set.</li>
+<li>Password policy for create/reset/change: 8-128 chars with uppercase/lowercase/digit.</li>
+<li>Text fields (<code>note</code>, <code>location_label</code>) are normalized and reject control characters.</li>
+<li>Admin/user path/query identifiers and limits are validated at API boundary where applicable.</li>
+</ul>
+<h2 id="adr-021-replace-plugin-based-pwa-build-chain-with-local-manifestservice-worker">ADR-021: Replace plugin-based PWA build chain with local manifest/service worker<a class="headerlink" href="#adr-021-replace-plugin-based-pwa-build-chain-with-local-manifestservice-worker" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Remove <code>vite-plugin-pwa</code> and ship PWA support through static <code>manifest.webmanifest</code> + local <code>sw.js</code>.</li>
+<li>Why: Dependency audit showed unresolved high-severity advisories in the plugin/workbox chain; local implementation reduces third-party attack surface while preserving installable PWA behavior.</li>
+<li>Security note: service worker cache excludes <code>/api/*</code> to avoid caching authenticated API responses.</li>
+</ul>
+<h2 id="adr-022-pwa-cache-versioning-keyed-by-release-tag">ADR-022: PWA cache versioning keyed by release tag<a class="headerlink" href="#adr-022-pwa-cache-versioning-keyed-by-release-tag" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Register service worker with a versioned URL query (<code>/sw.js?v=&lt;APP_VERSION&gt;</code>) and derive cache namespace from that version.</li>
+<li>Why: Ensures installed/mobile PWA clients receive deterministic cache rotation on each release deployment instead of remaining on stale app-shell caches.</li>
+<li>Details:</li>
+<li>Deployment sets <code>APP_VERSION</code> (typically equal to git release tag) and forwards it to frontend build as <code>VITE_APP_VERSION</code>.</li>
+<li>Service worker cache key prefix includes release version.</li>
+<li>Navigation fetch strategy uses network-first with offline fallback to cached <code>index.html</code> for better update propagation while preserving offline behavior.</li>
+</ul>
+<h2 id="adr-023-client-side-accent-color-presets-for-ui-controls">ADR-023: Client-side accent color presets for UI controls<a class="headerlink" href="#adr-023-client-side-accent-color-presets-for-ui-controls" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Add user-selectable accent presets in profile settings and apply them live to primary buttons and active selector controls.</li>
+<li>Why: Improves personalization and quick visual contrast tuning on mobile/desktop without introducing backend profile storage complexity.</li>
+<li>Details:</li>
+<li>Accent selection is stored in browser local storage (<code>fmr_accent_color</code>).</li>
+<li>Accent applies to primary CTA buttons and active navigation/auth selectors.</li>
+<li>Each preset defines separate light/dark tone values so contrast remains readable across both themes.</li>
+<li>Presets are curated for white foreground label readability over the existing app background treatment.</li>
+</ul>
+<h2 id="adr-024-surface-release-metadata-in-settings-ui">ADR-024: Surface release metadata in settings UI<a class="headerlink" href="#adr-024-surface-release-metadata-in-settings-ui" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: superseded</li>
+<li>Decision: The settings footer metadata line was removed to reduce UI noise and keep the settings screen focused on user controls.</li>
+<li>Why: The footer was not essential for primary use and consumed space near bottom navigation, especially on mobile.</li>
+<li>Details:</li>
+<li>Build/version metadata remains available via deployment config and git tags/releases.</li>
+<li><code>APP_VERSION</code> remains in use for service worker cache versioning.</li>
+</ul>
+<h2 id="adr-025-sticky-active-parking-session-on-home">ADR-025: Sticky active parking session on home<a class="headerlink" href="#adr-025-sticky-active-parking-session-on-home" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Replace <code>Last parked</code> on home with a two-state flow: <code>Parked?</code> start form and <code>You are parked</code> active session panel that ends only on explicit confirmation.</li>
+<li>Why: Matches real parking behavior, prevents accidental history writes before a parking action is complete, and improves day-of-use orientation while parked.</li>
+<li>Details:</li>
+<li><code>Park Here Now</code> starts a local active session when location or note/photo evidence exists.</li>
+<li>Active session shows start time, running duration, optional map, notes, and photo thumbnails.</li>
+<li><code>End parking</code> requires yes/no confirmation and writes the record to history only after confirmation.</li>
+<li>Active session is persisted per user in browser local storage to survive app close/reopen.</li>
+<li>While active and permission granted, browser notifications can display parked duration updates.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../architecture/" class="btn btn-neutral float-left" title="Architecture"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../dev-guide/" class="btn btn-neutral float-right" title="Dev Guide">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../architecture/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../dev-guide/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

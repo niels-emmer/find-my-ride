@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="http://localhost:8001/dev-guide/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Dev Guide - find-my-ride docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Dev Guide";
+        var mkdocs_page_input_path = "dev-guide.md";
+        var mkdocs_page_url = "/dev-guide/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> find-my-ride docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../INDEX/">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../decisions/">Decisions</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Dev Guide</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#initial-setup">Initial setup</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#run-locally-docker">Run locally (Docker)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#development-loop">Development loop</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#phonelan-testing">Phone/LAN testing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bootstrap-flow">Bootstrap flow</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#login-and-registration-flow">Login and registration flow</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#session-and-refresh-token-flow">Session and refresh-token flow</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#parking-capture-flow">Parking capture flow</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#multi-user-behavior">Multi-user behavior</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ui-navigation">UI navigation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mfa-behavior">MFA behavior</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#documentation-workflow">Documentation workflow</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#one-time-backfill-for-old-address-labels">One-time backfill for old address labels</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#validation-and-tests-policy">Validation and tests policy</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#serve-docs-locally">Serve docs locally</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#production-deployment-notes">Production deployment notes</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../api-reference/">API Reference</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../security/">Security</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">find-my-ride docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Dev Guide</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="dev-guide">Dev Guide<a class="headerlink" href="#dev-guide" title="Permanent link">&para;</a></h1>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Docker + Docker Compose</li>
+<li>macOS terminal (<code>zsh</code>) for local workflow</li>
+<li>Optional: Python virtualenv for docs (<code>mkdocs</code>)</li>
+</ul>
+<h2 id="initial-setup">Initial setup<a class="headerlink" href="#initial-setup" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Create env file:</li>
+</ol>
+<pre><code class="language-bash">cp .env.example .env
+</code></pre>
+<ol>
+<li>
+<p>Update at minimum:</p>
+</li>
+<li>
+<p><code>POSTGRES_PASSWORD</code></p>
+</li>
+<li><code>SECRET_KEY</code> (64+ random chars)</li>
+<li><code>CORS_ORIGINS</code></li>
+<li><code>ACCESS_TOKEN_EXPIRE_MINUTES</code></li>
+<li><code>REFRESH_TOKEN_EXPIRE_DAYS</code></li>
+<li><code>REFRESH_TOKEN_COOKIE_SECURE</code> (<code>true</code> in production behind HTTPS)</li>
+<li><code>VITE_API_URL</code> (keep as <code>/api</code> in Docker dev)</li>
+<li><code>VITE_PROXY_TARGET</code> (default: <code>http://backend:8000</code>)</li>
+</ol>
+<h2 id="run-locally-docker">Run locally (Docker)<a class="headerlink" href="#run-locally-docker" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">docker compose up --build
+</code></pre>
+<p>or:</p>
+<pre><code class="language-bash">make up
+</code></pre>
+<p>Endpoints:</p>
+<ul>
+<li>Frontend: <code>http://localhost:5173</code></li>
+<li>Backend OpenAPI docs: <code>http://localhost:8000/docs</code></li>
+<li>Health check: <code>http://localhost:8000/healthz</code></li>
+</ul>
+<h2 id="development-loop">Development loop<a class="headerlink" href="#development-loop" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Backend uses <code>uvicorn --reload</code> in compose dev service.</li>
+<li>Frontend uses Vite dev server with hot reload and <code>/api</code> proxy to backend.</li>
+<li>DB and upload storage are persisted in docker volumes / local folders.</li>
+</ul>
+<h2 id="phonelan-testing">Phone/LAN testing<a class="headerlink" href="#phonelan-testing" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Access the app from another device with <code>http://&lt;host-lan-ip&gt;:&lt;FRONTEND_PORT&gt;</code>.</li>
+<li>Keep <code>VITE_API_URL=/api</code> for this flow. If set to <code>http://localhost:...</code>, phones/tablets will try to call their own localhost and stall on status loading.</li>
+<li>Geolocation caveat: most mobile browsers require HTTPS for GPS access. Over plain HTTP LAN URLs, <code>Locate</code> can fail immediately and show <code>No reception</code>.</li>
+</ul>
+<h2 id="bootstrap-flow">Bootstrap flow<a class="headerlink" href="#bootstrap-flow" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open frontend.</li>
+<li>Create first user in "Create first admin" screen.</li>
+<li>That user is stored as admin and signed in immediately.</li>
+</ol>
+<h2 id="login-and-registration-flow">Login and registration flow<a class="headerlink" href="#login-and-registration-flow" title="Permanent link">&para;</a></h2>
+<ul>
+<li>If users already exist, the logged-out screen shows the same top app bar styling as the signed-in app (without user menu actions).</li>
+<li>An auth mode bar appears directly below the top bar with <code>Sign in</code> and <code>Register</code>.</li>
+<li><code>Register</code> is open by default (no moderation gate) and creates a normal non-admin account.</li>
+<li><code>Sign in</code> first submits username/password only; if MFA is enabled for that account, an OTP modal appears as a second step.</li>
+<li>The auth card is positioned in the lower half of the viewport with intentional extra bottom space reserved for a future banner.</li>
+<li>Username input is normalized to lowercase and validated for <code>a-z</code>, <code>0-9</code>, <code>.</code>, <code>_</code>, <code>-</code> (3-64 chars).</li>
+<li>Password policy for create/reset/change: 8-128 chars with at least one uppercase, lowercase, and digit.</li>
+</ul>
+<h2 id="session-and-refresh-token-flow">Session and refresh-token flow<a class="headerlink" href="#session-and-refresh-token-flow" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Auth endpoints (<code>bootstrap</code>, <code>register</code>, <code>login</code>) return access token JSON and set an HttpOnly refresh cookie.</li>
+<li>Frontend stores access token for API bearer auth and includes cookies (<code>credentials: include</code>) for refresh calls.</li>
+<li>On cold start without access token, frontend attempts <code>/api/auth/refresh</code> to restore session.</li>
+<li>On API <code>401</code> responses with a bearer token, frontend attempts one refresh and retries the original request once.</li>
+<li>Backend rotates refresh token on every successful refresh and stores only a hashed token in DB.</li>
+<li>Logout revokes only the current refresh token and clears cookie.</li>
+<li>Password changes (self-service or admin reset) revoke all refresh tokens for that user.</li>
+</ul>
+<h2 id="parking-capture-flow">Parking capture flow<a class="headerlink" href="#parking-capture-flow" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>Locate</code> button requests geolocation and attempts reverse-lookup location naming.</li>
+<li>On success, the UI shows place name and coordinates.</li>
+<li>On successful save with coordinates, the current place label is persisted as <code>location_label</code> for later history/latest display.</li>
+<li>Coordinate-style location labels are rejected by the API; coordinates must be paired with a physical address label.</li>
+<li>Stored labels are normalized in street-first order (<code>Street 12, ZIP City, Province, Country</code>).</li>
+<li>On failure, the UI shows <code>No reception</code>; save is still allowed when note and/or photos are provided.</li>
+<li>Photos are handled via 3 capture slots; each slot is an empty action button or an image thumbnail that can be retaken/removed.</li>
+<li>Camera capture prefers an in-app camera modal (<code>getUserMedia</code>) to avoid external camera-app round trips on memory-constrained mobile browsers; gallery/file-picker fallback remains available.</li>
+<li>Any parking photo thumbnail can be tapped/clicked to open a full-size preview modal.</li>
+</ul>
+<h2 id="multi-user-behavior">Multi-user behavior<a class="headerlink" href="#multi-user-behavior" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Admin can create new users in the UI (<code>settings</code> &gt; <code>admin</code> &gt; <code>add users</code>).</li>
+<li>Admin can manage existing users in <code>settings</code> &gt; <code>admin</code> &gt; <code>edit users</code>:</li>
+<li><code>Edit</code> opens a modal to reset password and/or change admin role</li>
+<li><code>Delete</code> removes the selected user</li>
+<li>self account is visible but does not expose edit/delete actions</li>
+<li>Non-admin users only see/delete their own parking records.</li>
+<li>Admin can filter history scope by user or all users.</li>
+</ul>
+<h2 id="ui-navigation">UI navigation<a class="headerlink" href="#ui-navigation" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The authenticated app uses 3 fixed bottom tabs:</li>
+<li><code>home</code>: parking start capture + active parking session</li>
+<li><code>history</code>: record history with expandable details and delete</li>
+<li><code>settings</code>: profile and admin</li>
+<li>Top app bar:</li>
+<li>app brand on the left</li>
+<li>account icon menu on the right with signed-in user and sign-out action</li>
+<li>Background image asset:</li>
+<li>file: <code>frontend/public/images/parking-background-option-3.jpg</code></li>
+<li>source: <code>https://www.pexels.com/photo/a-modern-car-in-an-underground-garage-16304132/</code></li>
+<li>license: <code>https://www.pexels.com/license/</code></li>
+<li><code>home</code> state flow:</li>
+<li>default shows <code>Parked?</code> capture form (Locate, note, up to 3 photos)</li>
+<li>after <code>Park Here Now</code>, app switches to <code>You are parked</code> with start timestamp + running duration</li>
+<li>active panel shows optional location map, note, thumbnails, and <code>End parking</code> confirmation (yes/no)</li>
+<li>active session is sticky per user across app close/reopen via local browser persistence</li>
+<li><code>history</code> record cards:</li>
+<li>collapsed view shows time/date, saved location text, and quick actions</li>
+<li><code>More info</code> expands details with OpenStreetMap embed preview, a <code>More details</code> note section, thumbnails, and a <code>Take me there</code> section</li>
+<li><code>Delete</code> removes the record</li>
+<li><code>settings</code> &gt; <code>profile</code> includes:</li>
+<li>change password</li>
+<li>theme switcher (system/light/dark)</li>
+<li>accent color selector (preset button/select highlight palettes, applied live and tuned for light/dark)</li>
+<li>MFA setup/verify/disable</li>
+<li><code>settings</code> &gt; <code>admin</code> is only visible to admin users and contains <code>edit users</code>.</li>
+<li><code>settings</code> &gt; <code>admin</code> layout:</li>
+<li><code>Add users</code> section for username/password/admin toggle creation</li>
+<li><code>Edit users</code> section for list + edit/delete actions (non-self users only)</li>
+</ul>
+<h2 id="mfa-behavior">MFA behavior<a class="headerlink" href="#mfa-behavior" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Any signed-in user can start MFA setup.</li>
+<li>App returns TOTP secret + provisioning URI, and the UI renders a QR code from that URI for app scan.</li>
+<li>User verifies one OTP code to enable MFA.</li>
+<li>If enabled, login requires <code>otp_code</code>.</li>
+</ul>
+<h2 id="documentation-workflow">Documentation workflow<a class="headerlink" href="#documentation-workflow" title="Permanent link">&para;</a></h2>
+<p>When changing code:</p>
+<ol>
+<li>Update relevant pages in <code>docs/</code>.</li>
+<li>Keep <code>docs/api-reference.md</code> in sync with route changes.</li>
+<li>Keep architecture and decision pages current.</li>
+</ol>
+<h2 id="one-time-backfill-for-old-address-labels">One-time backfill for old address labels<a class="headerlink" href="#one-time-backfill-for-old-address-labels" title="Permanent link">&para;</a></h2>
+<p>If older records have missing/coordinate-style <code>location_label</code> values, run:</p>
+<pre><code class="language-bash">docker compose run --rm --no-deps backend python -m app.scripts.backfill_location_labels
+</code></pre>
+<p>This keeps coordinates intact and writes resolved physical addresses where lookup succeeds.</p>
+<h2 id="validation-and-tests-policy">Validation and tests policy<a class="headerlink" href="#validation-and-tests-policy" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Any code change must be validated before completing work.</li>
+<li>Every functional change must include or update automated tests.</li>
+<li>If a test command cannot be executed in the current environment, report that gap explicitly.</li>
+</ul>
+<p>Run backend tests:</p>
+<pre><code class="language-bash">make test
+</code></pre>
+<p><code>make test</code> runs the suite in Docker (<code>backend</code> service image) to avoid host dependency drift.
+If you already installed backend Python dependencies locally, you can run:</p>
+<pre><code class="language-bash">make test-local
+</code></pre>
+<p>Run frontend tests:</p>
+<pre><code class="language-bash">make test-frontend
+</code></pre>
+<p>Run both:</p>
+<pre><code class="language-bash">make test-all
+</code></pre>
+<p>Run dependency security scans:</p>
+<pre><code class="language-bash">make security-scan
+</code></pre>
+<p><code>make security-scan</code> runs:
+- <code>npm audit</code> for frontend dependencies
+- <code>pip-audit</code> for backend dependencies (inside backend container)
+- <code>pip-audit</code> for docs dependencies (ephemeral Python container)</p>
+<h2 id="serve-docs-locally">Serve docs locally<a class="headerlink" href="#serve-docs-locally" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">pip install -r docs/requirements.txt
+mkdocs serve
+</code></pre>
+<p>or:</p>
+<pre><code class="language-bash">make docs-serve
+</code></pre>
+<p>Open <code>http://127.0.0.1:8001</code>.</p>
+<h2 id="production-deployment-notes">Production deployment notes<a class="headerlink" href="#production-deployment-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Use <code>docker-compose.prod.yml</code>.</li>
+<li><code>docker-compose.prod.yml</code> maps frontend host port from <code>FRONTEND_PORT</code> (fallback <code>18080</code>).</li>
+<li>Production frontend nginx proxies <code>/api/*</code> to backend service, so no separate public backend port is required.</li>
+<li>Set <code>APP_VERSION</code> to the release tag before deploy (for example <code>APP_VERSION=v0.1-beta.1</code>) so PWA cache/version updates propagate to installed mobile clients.</li>
+<li>Place frontend/backend behind an SSL reverse proxy (proxy config not included here).</li>
+<li>Restrict CORS to real public domain(s).</li>
+<li>Use strong credentials and persisted volumes for db/uploads.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../decisions/" class="btn btn-neutral float-left" title="Decisions"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../api-reference/" class="btn btn-neutral float-right" title="API Reference">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../decisions/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../api-reference/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
