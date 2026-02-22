@@ -1,44 +1,79 @@
-# find-my-ride memory index
+# find-my-ride docs index
 
-This is the project memory entrypoint for engineers and agents.
+This is the main documentation entrypoint for both humans and agents.
 
-## Current status
+## What this project is
 
-- Stack scaffolded: React PWA frontend + FastAPI backend + PostgreSQL + Docker Compose
-- Auth implemented: bootstrap admin, login, open self-register (no moderation), optional TOTP MFA
-- Username normalization/validation is enforced across auth and admin user-management endpoints
-- Password policy enforced across create/reset/change flows (8-128 chars with uppercase/lowercase/digit)
-- Session auth hardened: short-lived access tokens + rotating refresh tokens in HttpOnly cookies
-- Frontend auto-restores sessions via refresh cookie at app start and retries once on token-expiry `401`
-- Refresh sessions are revoked on logout, self password change, and admin password reset
-- PWA update path hardened: service worker cache/version is keyed by `APP_VERSION` (release tag) with network-first navigation fetch
-- Login UX uses a two-phase MFA flow: username/password first, OTP modal only when required
-- MFA setup renders a QR code (from provisioning URI) above the secret for authenticator app scan
-- Parking workflow implemented: start sticky active parking sessions (location or note/photo evidence required), then end/save to history with optional geo + note + up to 3 photos
-- Frontend navigation implemented as fixed bottom tabs: home, history, settings
-- Home capture uses locate (GPS + reverse place lookup) with explicit no-reception state and 3 photo capture slots with previews (in-app camera capture + gallery fallback); note/photo fallback supports no-GPS garage saves
-- Home switches to `You are parked` after start, showing start date/time, running duration, optional map, notes, thumbnails, `Take me there` map links (when location exists), and `End parking` under `Actions`
-- Active parking survives app close/reopen via local persistence and can emit browser notifications while parked
-- History uses expandable record cards (`More info`/`Close`) with map preview, location text, photos, and direction links; photo thumbnails open full-size on tap/click
-- Coordinates with coordinate-style labels are blocked by API validation to keep stored addresses human-readable
-- Top app bar includes account menu (signed-in identity + sign-out)
-- Settings profile includes password change, theme switcher, theme-aware accent color presets, and MFA controls
-- Admin panel supports add/edit/delete user management (excluding self-actions) with role/password updates via modal
-- Docker dev frontend API path uses `/api` + Vite proxy target for local-network phone access
-- Access control implemented: per-user data isolation with admin override
-- Backend automated API tests implemented for auth, MFA, users, records, ACL, and photo flows
-- Frontend automated tests implemented for tab navigation and settings/profile/admin UI behavior
-- Dependency security scanning workflow implemented (`make security-scan`)
-- Documentation system active with MkDocs
+`find-my-ride` is a self-hosted, multi-user PWA to help users store and recover where they parked.
 
-## Memory sections
+Core flow:
 
-- [Architecture](architecture.md)
-- [Decisions](decisions.md)
-- [Dev Guide](dev-guide.md)
-- [API Reference](api-reference.md)
-- [Security](security.md)
+- Start parking from `home` with one tap
+- Save any combination of:
+  - location (GPS + reverse-geocoded address)
+  - note
+  - up to 3 photos
+- Keep an active sticky parking state (`You are parked`) until explicitly ended
+- Save finished sessions to history with expandable details and map-navigation links
+
+## Stack at a glance
+
+- Frontend: React + TypeScript + Vite (PWA)
+- Backend: FastAPI + SQLAlchemy
+- Database: PostgreSQL
+- Runtime: Docker Compose (dev + prod compose files)
+- Documentation: MkDocs (`mkdocs.yml`, source in `docs/`, output in `site/`)
+
+## Key capabilities (current)
+
+### Authentication and users
+
+- Initial bootstrap admin flow
+- Self-registration (currently open, no moderation)
+- Username validation/normalization
+- Password policy enforcement
+- Optional TOTP MFA with QR-based setup
+- Multi-user RBAC:
+  - users access only their own data
+  - admin can manage users and view all records
+
+### Session and security behavior
+
+- Short-lived access token + rotating refresh token cookie
+- Session restoration on app startup using refresh endpoint
+- Refresh-token revocation on logout and password changes
+- Input validation/sanitization on API boundaries
+- Security scan workflow available (`make security-scan`)
+
+### Parking workflow and UX
+
+- `Parked?` form supports location and no-GPS fallback using notes/photos
+- In-app camera capture (`getUserMedia`) with gallery fallback
+- Tap-to-expand full-size image previews for parking photos
+- Active parking card includes:
+  - started time
+  - running duration
+  - optional location map
+  - `Take me there` links (Google Maps / OpenStreetMap)
+  - `Actions` section with `End parking`
+- Active session persistence across app restarts
+- History with expandable cards, notes, photos, map preview, and route links
+
+## Read this next (task-oriented)
+
+- [Architecture](architecture.md): system structure, data model, frontend/backend responsibilities
+- [Decisions](decisions.md): ADRs and why choices were made
+- [Dev Guide](dev-guide.md): local setup, commands, workflow, testing
+- [API Reference](api-reference.md): endpoints, payloads, constraints
+- [Security](security.md): security posture, controls, hardening expectations
+
+## Fast operations
+
+- Run full test + infra checks: `make test-all`
+- Run frontend tests: `make test-frontend`
+- Build docs: `./.venv-docs/bin/mkdocs build`
+- Serve docs locally: `./.venv-docs/bin/mkdocs serve -a 127.0.0.1:8001`
 
 ## Source-of-truth policy
 
-Code is the source of truth. If docs conflict with code, update docs immediately.
+Code is the source of truth. If docs and code diverge, update docs to match code.
