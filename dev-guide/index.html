@@ -80,6 +80,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#documentation-workflow">Documentation workflow</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#readme-screenshot-refresh-workflow">README screenshot refresh workflow</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#one-time-backfill-for-old-address-labels">One-time backfill for old address labels</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#validation-and-tests-policy">Validation and tests policy</a>
@@ -272,6 +274,25 @@
 <li>Keep <code>docs/api-reference.md</code> in sync with route changes.</li>
 <li>Keep architecture and decision pages current.</li>
 </ol>
+<h2 id="readme-screenshot-refresh-workflow">README screenshot refresh workflow<a class="headerlink" href="#readme-screenshot-refresh-workflow" title="Permanent link">&para;</a></h2>
+<p>When refreshing README screenshots (<code>docs/assets/screenshots/home.png</code>, <code>history.png</code>, <code>settings.png</code>), keep these capture defaults so the README layout stays consistent:</p>
+<ul>
+<li>Output format/size: PNG at <code>1170x1992</code> for each image.</li>
+<li>Visual scale: apply <code>1.5x</code> page zoom during capture so card text and controls remain readable in the 3-up README gallery.</li>
+<li>Theme: dark mode (<code>fmr_theme_mode=dark</code>) with the default <code>evergreen</code> accent.</li>
+<li>Environment: run against the local Docker stack (<code>docker compose up -d --build</code>) on the frontend URL (<code>http://127.0.0.1:${FRONTEND_PORT}</code>; current default in this repo is <code>15173</code>).</li>
+<li>Data setup: use a dedicated demo account (currently <code>readme_demo</code>) with at least 3 history rows:</li>
+<li>at least 2 rows with stored geocoded <code>location_label</code> + coordinates</li>
+<li>at least 1 row without location (note/photo fallback state)</li>
+<li>Required capture states:</li>
+<li><code>home</code>: default <code>Parked?</code> card</li>
+<li><code>history</code>: first record expanded via <code>More info</code>, with OpenStreetMap embed visible</li>
+<li><code>settings</code>: <code>Profile</code> section visible including theme + accent controls</li>
+<li>Capture hygiene:</li>
+<li>dismiss transient toasts before each screenshot</li>
+<li>avoid camera/mfa modal overlays</li>
+<li>commit only the screenshot assets (no temporary local capture scripts)</li>
+</ul>
 <h2 id="one-time-backfill-for-old-address-labels">One-time backfill for old address labels<a class="headerlink" href="#one-time-backfill-for-old-address-labels" title="Permanent link">&para;</a></h2>
 <p>If older records have missing/coordinate-style <code>location_label</code> values, run:</p>
 <pre><code class="language-bash">docker compose run --rm --no-deps backend python -m app.scripts.backfill_location_labels
