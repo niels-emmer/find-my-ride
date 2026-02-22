@@ -69,9 +69,9 @@ try {
   await page.goto(frontendUrl, { waitUntil: 'networkidle' });
   await page.waitForSelector('h1:has-text("Parked?")', { timeout: 30000 });
 
-  // README capture requirement: 2x visual zoom at native PNG dimensions.
+  // README capture requirement: 3x visual zoom at native PNG dimensions.
   await page.evaluate(() => {
-    document.documentElement.style.zoom = '2';
+    document.documentElement.style.zoom = '3';
   });
 
   // home.png
