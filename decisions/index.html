@@ -212,7 +212,7 @@
 <ul>
 <li>Date: 2026-02-22</li>
 <li>Status: accepted</li>
-<li>Decision: Replace manual latitude/longitude fields with explicit <code>Locate</code> flow (GPS + reverse place lookup / <code>No reception</code>) and use 3 camera-first photo slots with thumbnail preview/retake/remove controls.</li>
+<li>Decision: Replace manual latitude/longitude fields with explicit <code>Locate</code> flow (GPS + reverse place lookup / <code>No location could be established</code>) and use 3 camera-first photo slots with thumbnail preview/retake/remove controls.</li>
 <li>Why: Improves mobile ergonomics and reduces user error in garages/cities while keeping the save flow explicit.</li>
 </ul>
 <h2 id="adr-011-location-optional-with-evidence-fallback">ADR-011: Location optional with evidence fallback<a class="headerlink" href="#adr-011-location-optional-with-evidence-fallback" title="Permanent link">&para;</a></h2>
@@ -344,7 +344,7 @@
 <li>Decision: Replace <code>Last parked</code> on home with a two-state flow: <code>Parked?</code> start form and <code>You are parked</code> active session panel that ends only on explicit confirmation.</li>
 <li>Why: Matches real parking behavior, prevents accidental history writes before a parking action is complete, and improves day-of-use orientation while parked.</li>
 <li>Details:</li>
-<li><code>Park Here Now</code> starts a local active session when location or note/photo evidence exists.</li>
+<li><code>Remember This</code> starts a local active session when location or note/photo evidence exists.</li>
 <li>Active session shows start time, running duration, optional map, notes, and photo thumbnails.</li>
 <li><code>End parking</code> requires yes/no confirmation and writes the record to history only after confirmation.</li>
 <li>Active session is persisted per user in browser local storage to survive app close/reopen.</li>

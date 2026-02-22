@@ -174,7 +174,7 @@
 <ul>
 <li>Access the app from another device with <code>http://&lt;host-lan-ip&gt;:&lt;FRONTEND_PORT&gt;</code>.</li>
 <li>Keep <code>VITE_API_URL=/api</code> for this flow. If set to <code>http://localhost:...</code>, phones/tablets will try to call their own localhost and stall on status loading.</li>
-<li>Geolocation caveat: most mobile browsers require HTTPS for GPS access. Over plain HTTP LAN URLs, <code>Locate</code> can fail immediately and show <code>No reception</code>.</li>
+<li>Geolocation caveat: most mobile browsers require HTTPS for GPS access. Over plain HTTP LAN URLs, <code>Locate</code> can fail immediately and show <code>No location could be established</code>.</li>
 </ul>
 <h2 id="bootstrap-flow">Bootstrap flow<a class="headerlink" href="#bootstrap-flow" title="Permanent link">&para;</a></h2>
 <ol>
@@ -210,7 +210,7 @@
 <li>On successful save with coordinates, the current place label is persisted as <code>location_label</code> for later history/latest display.</li>
 <li>Coordinate-style location labels are rejected by the API; coordinates must be paired with a physical address label.</li>
 <li>Stored labels are normalized in street-first order (<code>Street 12, ZIP City, Province, Country</code>).</li>
-<li>On failure, the UI shows <code>No reception</code>; save is still allowed when note and/or photos are provided.</li>
+<li>On failure, the UI shows <code>No location could be established</code>; save is still allowed when note and/or photos are provided.</li>
 <li>Photos are handled via 3 capture slots; each slot is an empty action button or an image thumbnail that can be retaken/removed.</li>
 <li>Camera capture prefers an in-app camera modal (<code>getUserMedia</code>) to avoid external camera-app round trips on memory-constrained mobile browsers; gallery/file-picker fallback remains available.</li>
 <li>Any parking photo thumbnail can be tapped/clicked to open a full-size preview modal.</li>
@@ -241,7 +241,7 @@
 <li>license: <code>https://www.pexels.com/license/</code></li>
 <li><code>home</code> state flow:</li>
 <li>default shows <code>Parked?</code> capture form (Locate, note, up to 3 photos)</li>
-<li>after <code>Park Here Now</code>, app switches to <code>You are parked</code> with start timestamp + running duration</li>
+<li>after <code>Remember This</code>, app switches to <code>You are parked</code> with start timestamp + running duration</li>
 <li>active panel shows optional location map, note, thumbnails, and <code>End parking</code> confirmation (yes/no)</li>
 <li>active session is sticky per user across app close/reopen via local browser persistence</li>
 <li><code>history</code> record cards:</li>

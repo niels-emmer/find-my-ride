@@ -160,8 +160,8 @@
 <li>Park-now photo intake uses 3 camera-first capture slots with thumbnail preview/retake/remove controls</li>
 <li>Camera capture is handled in-app with <code>getUserMedia</code> (when available) to avoid mobile browser restarts during external camera handoff; gallery/file-picker fallback remains available</li>
 <li>File-picker selection is synchronized on <code>focus</code>/<code>visibilitychange</code> for fallback browser flows</li>
-<li>Park-now location state is explicit (<code>ready</code> with place/coords or <code>No reception</code>)</li>
-<li>On non-secure contexts (common on HTTP LAN URLs), location state surfaces an HTTPS requirement hint for mobile browsers</li>
+<li>Park-now location state is explicit (<code>ready</code> with resolved place text or <code>No location could be established</code>)</li>
+<li>On non-secure contexts (common on HTTP LAN URLs), <code>Locate</code> typically resolves to <code>No location could be established</code></li>
 <li>Park-now start accepts either a valid location pair or note/photo evidence, allowing garage use when GPS is unavailable</li>
 <li>Park-now requires a resolved physical <code>location_label</code> when coordinates are saved (coordinate-style labels are rejected)</li>
 <li>Home active state (<code>You are parked</code>) shows start timestamp, running duration, optional location map, notes, and thumbnails until user confirms <code>End parking</code></li>
