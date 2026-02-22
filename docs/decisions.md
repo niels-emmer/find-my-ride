@@ -185,13 +185,12 @@
 ## ADR-024: Surface release metadata in settings UI
 
 - Date: 2026-02-22
-- Status: accepted
-- Decision: Show repository name, app version, and release reference in a settings footer above the bottom tab bar.
-- Why: Gives operators/users a quick visible way to confirm what build is currently running on a device/PWA instance.
+- Status: superseded
+- Decision: The settings footer metadata line was removed to reduce UI noise and keep the settings screen focused on user controls.
+- Why: The footer was not essential for primary use and consumed space near bottom navigation, especially on mobile.
 - Details:
-  - Footer links repo name to `REPO_URL` and release ref to `REPO_URL/commit/<RELEASE_SHA>` when set.
-  - Frontend reads `VITE_APP_VERSION`, `VITE_RELEASE_SHA`, and `VITE_REPO_URL` with safe defaults.
-  - Compose/dev/prod configs expose `APP_VERSION`, `RELEASE_SHA`, and `REPO_URL` for consistent builds.
+  - Build/version metadata remains available via deployment config and git tags/releases.
+  - `APP_VERSION` remains in use for service worker cache versioning.
 
 ## ADR-025: Sticky active parking session on home
 

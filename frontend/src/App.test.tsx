@@ -185,23 +185,6 @@ describe('App tabs and settings', () => {
     expect(screen.queryByRole('heading', { name: 'Admin' })).not.toBeInTheDocument();
   });
 
-  it('shows build metadata footer on settings tab', async () => {
-    seedAuthenticatedSession(false);
-
-    render(<App />);
-
-    expect(screen.queryByLabelText('Build metadata')).not.toBeInTheDocument();
-    fireEvent.click(await screen.findByRole('button', { name: 'settings' }));
-
-    const metadata = await screen.findByLabelText('Build metadata');
-    expect(metadata).toBeInTheDocument();
-    const repoLink = within(metadata).getByRole('link', { name: 'find-my-ride' });
-    expect(repoLink).toHaveAttribute('href', 'https://github.com/niels-emmer/find-my-ride');
-    expect(within(metadata).getByText(/^v/)).toBeInTheDocument();
-    const releaseLink = within(metadata).getByRole('link', { name: 'local' });
-    expect(releaseLink).toHaveAttribute('href', 'https://github.com/niels-emmer/find-my-ride');
-  });
-
   it('updates accent color live from settings profile and adapts to theme', async () => {
     seedAuthenticatedSession(false);
 

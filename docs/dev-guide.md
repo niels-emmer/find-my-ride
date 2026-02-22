@@ -129,7 +129,6 @@ Endpoints:
   - theme switcher (system/light/dark)
   - accent color selector (preset button/select highlight palettes, applied live and tuned for light/dark)
   - MFA setup/verify/disable
-- `settings` tab also shows build metadata above bottom tabs: repo link, app version, and release ref link.
 - `settings` > `admin` is only visible to admin users and contains `edit users`.
 - `settings` > `admin` layout:
   - `Add users` section for username/password/admin toggle creation
@@ -223,7 +222,6 @@ Open `http://127.0.0.1:8001`.
 - `docker-compose.prod.yml` maps frontend host port from `FRONTEND_PORT` (fallback `18080`).
 - Production frontend nginx proxies `/api/*` to backend service, so no separate public backend port is required.
 - Set `APP_VERSION` to the release tag before deploy (for example `APP_VERSION=v0.1-beta.1`) so PWA cache/version updates propagate to installed mobile clients.
-- Set `RELEASE_SHA` (for example `git rev-parse HEAD`) and optional `REPO_URL` so the settings metadata footer links to the running release commit/repository.
 - Place frontend/backend behind an SSL reverse proxy (proxy config not included here).
 - Restrict CORS to real public domain(s).
 - Use strong credentials and persisted volumes for db/uploads.

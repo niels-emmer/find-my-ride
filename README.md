@@ -142,8 +142,6 @@ Phone testing on local network:
 - `FRONTEND_PORT` controls host port mapping in production compose.
 - For predictable PWA updates, set:
   - `APP_VERSION` (release/tag string)
-  - `RELEASE_SHA` (commit hash)
-  - optional `REPO_URL`
 - Production cookie/security defaults should include:
   - `REFRESH_TOKEN_COOKIE_SECURE=true`
   - strict `CORS_ORIGINS`

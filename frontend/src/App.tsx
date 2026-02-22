@@ -13,13 +13,6 @@ const APP_BACKGROUND_IMAGE_URL = '/images/parking-background-option-3.jpg';
 const USERNAME_PATTERN = '[A-Za-z0-9](?:[A-Za-z0-9._-]{1,62}[A-Za-z0-9])?';
 const PASSWORD_POLICY_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,128}';
 const PASSWORD_POLICY_HINT = 'Use 8-128 chars including uppercase, lowercase, and a digit.';
-const DEFAULT_REPOSITORY_URL = 'https://github.com/niels-emmer/find-my-ride';
-const APP_VERSION = (import.meta.env.VITE_APP_VERSION || 'dev').trim() || 'dev';
-const RELEASE_SHA = (import.meta.env.VITE_RELEASE_SHA || '').trim();
-const REPOSITORY_URL =
-  ((import.meta.env.VITE_REPO_URL || DEFAULT_REPOSITORY_URL).trim() || DEFAULT_REPOSITORY_URL).replace(/\/+$/, '');
-const RELEASE_REF = RELEASE_SHA ? RELEASE_SHA.slice(0, 12) : 'local';
-const RELEASE_URL = RELEASE_SHA ? `${REPOSITORY_URL}/commit/${RELEASE_SHA}` : REPOSITORY_URL;
 const DEFAULT_ACCENT_COLOR: AccentColor = 'evergreen';
 type ResolvedTheme = 'light' | 'dark';
 type AccentOption = {
@@ -805,18 +798,6 @@ function App(): JSX.Element {
           </div>
         )}
       </main>
-
-      {activeTab === 'settings' ? (
-        <p className="settings-build-meta" aria-label="Build metadata">
-          <a className="settings-meta-link" href={REPOSITORY_URL} target="_blank" rel="noreferrer">
-            find-my-ride
-          </a>
-          <span>v{APP_VERSION}</span>
-          <a className="settings-meta-link" href={RELEASE_URL} target="_blank" rel="noreferrer">
-            {RELEASE_REF}
-          </a>
-        </p>
-      ) : null}
 
       <BottomTabBar activeTab={activeTab} onSelect={setActiveTab} />
 

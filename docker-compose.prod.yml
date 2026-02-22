@@ -35,8 +35,6 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_APP_VERSION: ${APP_VERSION:-dev}
-        VITE_RELEASE_SHA: ${RELEASE_SHA:-local}
-        VITE_REPO_URL: ${REPO_URL:-https://github.com/niels-emmer/find-my-ride}
     restart: unless-stopped
     depends_on:
       - backend
