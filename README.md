@@ -121,6 +121,7 @@ make security-scan
 
 - Intended for deployment behind an existing SSL reverse proxy.
 - Set strict, production-grade secrets and `CORS_ORIGINS`.
+- `docker-compose.prod.yml` reads `FRONTEND_PORT` for host mapping (fallback `18080`).
 - Set secure session values for production:
   - `ACCESS_TOKEN_EXPIRE_MINUTES` (recommended: 10-15)
   - `REFRESH_TOKEN_EXPIRE_DAYS` (recommended: 14-30)

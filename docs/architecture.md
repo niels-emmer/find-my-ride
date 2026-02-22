@@ -21,7 +21,7 @@ Development (`docker-compose.yml`):
 
 Production-style (`docker-compose.prod.yml`):
 
-- `frontend` static app on `:8080` (expected behind external SSL reverse proxy)
+- `frontend` static app on `:${FRONTEND_PORT}` (container `80`; default host fallback `18080`)
 - `backend` internal API
 - `db` internal PostgreSQL
 

@@ -213,6 +213,7 @@ Open `http://127.0.0.1:8001`.
 ## Production deployment notes
 
 - Use `docker-compose.prod.yml`.
+- `docker-compose.prod.yml` maps frontend host port from `FRONTEND_PORT` (fallback `18080`).
 - Place frontend/backend behind an SSL reverse proxy (proxy config not included here).
 - Restrict CORS to real public domain(s).
 - Use strong credentials and persisted volumes for db/uploads.
