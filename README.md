@@ -44,17 +44,11 @@ Docs are available in `docs/INDEX.md` (source) and `site/INDEX/index.html` (gene
 
 ## Screenshots
 
-### Home
-
-![Home screen](docs/assets/screenshots/home.png)
-
-### History
-
-![History screen](docs/assets/screenshots/history.png)
-
-### Settings
-
-![Settings screen](docs/assets/screenshots/settings.png)
+<p align="center">
+  <img src="docs/assets/screenshots/home.png" alt="Home screen (mobile)" width="31%" />
+  <img src="docs/assets/screenshots/history.png" alt="History screen (mobile)" width="31%" />
+  <img src="docs/assets/screenshots/settings.png" alt="Settings screen (mobile)" width="31%" />
+</p>
 
 ## Quick start (Docker)
 
