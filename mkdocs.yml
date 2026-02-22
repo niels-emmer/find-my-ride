@@ -1,6 +1,6 @@
 site_name: find-my-ride docs
 site_description: Documentation and project memory for find-my-ride
-site_url: http://localhost:8001
+site_url: https://niels-emmer.github.io/find-my-ride/
 
 nav:
   - Home: INDEX.md
