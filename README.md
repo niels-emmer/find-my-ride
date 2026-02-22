@@ -137,6 +137,7 @@ make security-scan
 - Set strict, production-grade secrets and `CORS_ORIGINS`.
 - `docker-compose.prod.yml` reads `FRONTEND_PORT` for host mapping (fallback `18080`).
 - Production frontend nginx proxies `/api/*` to backend internally (`backend:8000`), so browsers keep same-origin API calls.
+- Set `APP_VERSION` to your release tag (for example `v0.1-beta.1`) before building production images so the PWA service worker cache version rotates on deploy.
 - Set secure session values for production:
   - `ACCESS_TOKEN_EXPIRE_MINUTES` (recommended: 10-15)
   - `REFRESH_TOKEN_EXPIRE_DAYS` (recommended: 14-30)

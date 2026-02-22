@@ -76,6 +76,8 @@ PWA support:
 - Static web manifest at `frontend/public/manifest.webmanifest`
 - Local service worker at `frontend/public/sw.js`, registered in `src/main.tsx`
 - Service worker explicitly avoids caching `/api/*` responses to prevent sensitive auth/data caching
+- Service worker cache is versioned by app release tag via `VITE_APP_VERSION`/`APP_VERSION` and rotates cache namespace on deploy
+- Navigation requests use network-first caching so online clients can fetch the latest app shell after a release
 
 ## Security model
 

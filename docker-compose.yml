@@ -53,6 +53,7 @@ services:
     environment:
       VITE_API_URL: ${VITE_API_URL:-/api}
       VITE_PROXY_TARGET: ${VITE_PROXY_TARGET:-http://backend:8000}
+      VITE_APP_VERSION: ${APP_VERSION:-dev-local}
     volumes:
       - ./frontend:/app
       - /app/node_modules

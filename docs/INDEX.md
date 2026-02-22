@@ -11,6 +11,7 @@ This is the project memory entrypoint for engineers and agents.
 - Session auth hardened: short-lived access tokens + rotating refresh tokens in HttpOnly cookies
 - Frontend auto-restores sessions via refresh cookie at app start and retries once on token-expiry `401`
 - Refresh sessions are revoked on logout, self password change, and admin password reset
+- PWA update path hardened: service worker cache/version is keyed by `APP_VERSION` (release tag) with network-first navigation fetch
 - Login UX uses a two-phase MFA flow: username/password first, OTP modal only when required
 - MFA setup renders a QR code (from provisioning URI) above the secret for authenticator app scan
 - Parking workflow implemented: create records with optional geo + note + up to 3 photos (location pair or evidence required), persist location label text, view latest, and delete records

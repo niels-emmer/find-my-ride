@@ -158,3 +158,14 @@
 - Decision: Remove `vite-plugin-pwa` and ship PWA support through static `manifest.webmanifest` + local `sw.js`.
 - Why: Dependency audit showed unresolved high-severity advisories in the plugin/workbox chain; local implementation reduces third-party attack surface while preserving installable PWA behavior.
 - Security note: service worker cache excludes `/api/*` to avoid caching authenticated API responses.
+
+## ADR-022: PWA cache versioning keyed by release tag
+
+- Date: 2026-02-22
+- Status: accepted
+- Decision: Register service worker with a versioned URL query (`/sw.js?v=<APP_VERSION>`) and derive cache namespace from that version.
+- Why: Ensures installed/mobile PWA clients receive deterministic cache rotation on each release deployment instead of remaining on stale app-shell caches.
+- Details:
+  - Deployment sets `APP_VERSION` (typically equal to git release tag) and forwards it to frontend build as `VITE_APP_VERSION`.
+  - Service worker cache key prefix includes release version.
+  - Navigation fetch strategy uses network-first with offline fallback to cached `index.html` for better update propagation while preserving offline behavior.
