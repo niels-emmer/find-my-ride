@@ -297,3 +297,11 @@ Download photo if caller has access.
 - `created_at`
 - `updated_at`
 - `photos: PhotoOut[]`
+
+## Related docs
+
+- [Docs index](index.md)
+- [Architecture](architecture.md)
+- [Dev Guide](dev-guide.md)
+- [Decisions](decisions.md)
+- [Security](security.md)

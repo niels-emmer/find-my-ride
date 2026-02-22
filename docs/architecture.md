@@ -113,3 +113,11 @@ PWA support:
 - DB schema migrations are currently startup `create_all` (no Alembic migration history yet).
 
 These are acceptable for initial scaffold but should be hardened before full production rollout.
+
+## Related docs
+
+- [Docs index](index.md)
+- [Decisions](decisions.md)
+- [Dev Guide](dev-guide.md)
+- [API Reference](api-reference.md)
+- [Security](security.md)

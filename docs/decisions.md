@@ -204,3 +204,11 @@
   - `End parking` requires yes/no confirmation and writes the record to history only after confirmation.
   - Active session is persisted per user in browser local storage to survive app close/reopen.
   - While active and permission granted, browser notifications can display parked duration updates.
+
+## Related docs
+
+- [Docs index](index.md)
+- [Architecture](architecture.md)
+- [Dev Guide](dev-guide.md)
+- [API Reference](api-reference.md)
+- [Security](security.md)

@@ -226,3 +226,11 @@ Open `http://127.0.0.1:8001`.
 - Place frontend/backend behind an SSL reverse proxy (proxy config not included here).
 - Restrict CORS to real public domain(s).
 - Use strong credentials and persisted volumes for db/uploads.
+
+## Related docs
+
+- [Docs index](index.md)
+- [Architecture](architecture.md)
+- [Decisions](decisions.md)
+- [API Reference](api-reference.md)
+- [Security](security.md)
