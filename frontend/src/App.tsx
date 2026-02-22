@@ -1429,7 +1429,7 @@ function ParkNowCard({
     <>
       <div className="stack park-form">
         <p className="muted">
-          Use Locate for a GPS fix when available. If GPS fails, you can still save with notes and/or photos.
+          Use Find My Ride to quickly save your current location and return to it when you need your car again. Tap Locate below, optionally add a note and photos, and tap 'remember'...
         </p>
 
         <div className="stack">
@@ -1618,7 +1618,7 @@ function ParkNowCard({
             })();
           }}
         >
-          {saving ? 'Saving...' : 'Park Here Now'}
+          {saving ? 'Saving...' : 'Remember This'}
         </button>
       </div>
 

@@ -199,7 +199,7 @@
 - Decision: Replace `Last parked` on home with a two-state flow: `Parked?` start form and `You are parked` active session panel that ends only on explicit confirmation.
 - Why: Matches real parking behavior, prevents accidental history writes before a parking action is complete, and improves day-of-use orientation while parked.
 - Details:
-  - `Park Here Now` starts a local active session when location or note/photo evidence exists.
+  - `Remember This` starts a local active session when location or note/photo evidence exists.
   - Active session shows start time, running duration, optional map, notes, and photo thumbnails.
   - `End parking` requires yes/no confirmation and writes the record to history only after confirmation.
   - Active session is persisted per user in browser local storage to survive app close/reopen.

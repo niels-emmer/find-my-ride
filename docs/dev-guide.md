@@ -120,7 +120,7 @@ Endpoints:
   - license: `https://www.pexels.com/license/`
 - `home` state flow:
   - default shows `Parked?` capture form (Locate, note, up to 3 photos)
-  - after `Park Here Now`, app switches to `You are parked` with start timestamp + running duration
+  - after `Remember This`, app switches to `You are parked` with start timestamp + running duration
   - active panel shows optional location map, note, thumbnails, and `End parking` confirmation (yes/no)
   - active session is sticky per user across app close/reopen via local browser persistence
 - `history` record cards:

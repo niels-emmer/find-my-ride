@@ -598,7 +598,7 @@ describe('App tabs and settings', () => {
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Add a location, note, or photo before saving.');
 
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }));
@@ -614,7 +614,7 @@ describe('App tabs and settings', () => {
       render(<App />);
       expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
-      fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
       expect(await screen.findByRole('status')).toHaveTextContent('Add a location, note, or photo before saving.');
 
       await waitFor(() => {
@@ -700,7 +700,7 @@ describe('App tabs and settings', () => {
     fireEvent.change(screen.getByLabelText('Note (optional)'), {
       target: { value: 'B2 near blue elevator' }
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
 
     expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
     const activePhoto = await screen.findByAltText('Parking photo evidence');
@@ -748,7 +748,7 @@ describe('App tabs and settings', () => {
     fireEvent.change(screen.getByLabelText('Note (optional)'), {
       target: { value: 'B2 near blue elevator' }
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
 
     expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
     expect(screen.getByText('B2 near blue elevator')).toBeInTheDocument();
@@ -814,7 +814,7 @@ describe('App tabs and settings', () => {
     fireEvent.change(screen.getByLabelText('Note (optional)'), {
       target: { value: 'B2 near blue elevator' }
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
 
     expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
     expect(apiMock.createRecord).not.toHaveBeenCalled();
@@ -851,7 +851,7 @@ describe('App tabs and settings', () => {
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
     expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'End parking' }));
@@ -887,7 +887,7 @@ describe('App tabs and settings', () => {
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
     expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { name: 'Take me there' })).toBeInTheDocument();
@@ -974,7 +974,7 @@ describe('App tabs and settings', () => {
       fireEvent.change(screen.getByLabelText('Note (optional)'), {
         target: { value: 'B2 near blue elevator' }
       });
-      fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
 
       await waitFor(() => {
         expect(NotificationMock.requestPermission).toHaveBeenCalledTimes(1);
@@ -1022,7 +1022,7 @@ describe('App tabs and settings', () => {
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
 
     expect(await screen.findByText('Add a location, note, or photo before saving.')).toBeInTheDocument();
     expect(apiMock.createRecord).not.toHaveBeenCalled();
