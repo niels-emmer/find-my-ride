@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/data/uploads}
+      MAX_PHOTOS_PER_RECORD: ${MAX_PHOTOS_PER_RECORD:-3}
+      MAX_PHOTO_SIZE_MB: ${MAX_PHOTO_SIZE_MB:-8}
+      ALLOW_SELF_REGISTER: ${ALLOW_SELF_REGISTER:-false}
+      MFA_ISSUER: ${MFA_ISSUER:-find-my-ride}
+    volumes:
+      - ./data/uploads:/data/uploads
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres_data:

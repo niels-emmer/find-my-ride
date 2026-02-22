@@ -1,0 +1,23 @@
+site_name: find-my-ride docs
+site_description: Documentation and project memory for find-my-ride
+site_url: http://localhost:8001
+
+nav:
+  - Home: INDEX.md
+  - Architecture: architecture.md
+  - Decisions: decisions.md
+  - Dev Guide: dev-guide.md
+  - API Reference: api-reference.md
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
