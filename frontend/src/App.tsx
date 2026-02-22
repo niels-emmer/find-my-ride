@@ -8,6 +8,7 @@ import type { AccentColor, ParkingRecord, SystemStatus, ThemeMode, User } from '
 const TOKEN_KEY = 'fmr_access_token';
 const THEME_KEY = 'fmr_theme_mode';
 const ACCENT_KEY = 'fmr_accent_color';
+const ACTIVE_PARKING_KEY = 'fmr_active_parking_by_user_v1';
 const APP_BACKGROUND_IMAGE_URL = '/images/parking-background-option-3.jpg';
 const USERNAME_PATTERN = '[A-Za-z0-9](?:[A-Za-z0-9._-]{1,62}[A-Za-z0-9])?';
 const PASSWORD_POLICY_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,128}';
@@ -81,6 +82,20 @@ const ACCENT_BY_ID: Record<AccentColor, AccentOption> = Object.fromEntries(
 type TabKey = 'find' | 'history' | 'settings';
 type AuthMode = 'login' | 'register';
 type LocatedFix = { latitude: number; longitude: number; placeLabel: string };
+type ActiveParkingPhoto = {
+  id: string;
+  name: string;
+  type: string;
+  data_url: string;
+};
+type ActiveParkingSession = {
+  started_at: string;
+  latitude: number | null;
+  longitude: number | null;
+  location_label: string | null;
+  note: string | null;
+  photos: ActiveParkingPhoto[];
+};
 
 function normalizeUsernameInput(value: string): string {
   return value.trim().toLowerCase();
@@ -104,6 +119,84 @@ function formatDateTime(value: string): string {
     minute: '2-digit'
   });
   return `${day}-${month}-${year} ${time}`;
+}
+
+function formatActiveDuration(startedAt: string, nowMs = Date.now()): string {
+  const startedMs = new Date(startedAt).getTime();
+  if (Number.isNaN(startedMs)) {
+    return '0h 00m';
+  }
+  const elapsedMinutes = Math.max(0, Math.floor((nowMs - startedMs) / 60000));
+  const hours = Math.floor(elapsedMinutes / 60);
+  const minutes = elapsedMinutes % 60;
+  return `${hours}h ${String(minutes).padStart(2, '0')}m`;
+}
+
+function loadActiveParkingMap(): Record<string, ActiveParkingSession> {
+  const raw = localStorage.getItem(ACTIVE_PARKING_KEY);
+  if (!raw) {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== 'object') {
+      return {};
+    }
+    return parsed as Record<string, ActiveParkingSession>;
+  } catch {
+    return {};
+  }
+}
+
+function loadActiveParkingForUser(userId: string): ActiveParkingSession | null {
+  const byUser = loadActiveParkingMap();
+  return byUser[userId] || null;
+}
+
+function saveActiveParkingForUser(userId: string, session: ActiveParkingSession | null): void {
+  const byUser = loadActiveParkingMap();
+  if (session) {
+    byUser[userId] = session;
+  } else {
+    delete byUser[userId];
+  }
+  try {
+    localStorage.setItem(ACTIVE_PARKING_KEY, JSON.stringify(byUser));
+  } catch {
+    // ignore storage quota errors
+  }
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+        return;
+      }
+      reject(new Error('Unable to read selected photo.'));
+    };
+    reader.onerror = () => {
+      reject(new Error('Unable to read selected photo.'));
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function dataUrlToFile(photo: ActiveParkingPhoto): File {
+  const [meta, encoded] = photo.data_url.split(',');
+  if (!encoded) {
+    return new File([], photo.name, { type: photo.type || 'application/octet-stream' });
+  }
+  const mimeMatch = meta.match(/^data:([^;]+);base64$/);
+  const mime = mimeMatch?.[1] || photo.type || 'application/octet-stream';
+  const binary = window.atob(encoded);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return new File([bytes], photo.name, { type: mime });
 }
 
 function googleMapsDirectionsUrl(lat: number, lng: number): string {
@@ -240,8 +333,8 @@ function App(): JSX.Element {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const [records, setRecords] = useState<ParkingRecord[]>([]);
-  const [latestRecord, setLatestRecord] = useState<ParkingRecord | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [activeParking, setActiveParking] = useState<ActiveParkingSession | null>(null);
   const [scope, setScope] = useState<'me' | 'all' | string>('me');
   const [activeTab, setActiveTab] = useState<TabKey>('find');
   const [authMode, setAuthMode] = useState<AuthMode>('login');
@@ -264,6 +357,7 @@ function App(): JSX.Element {
   const [message, setMessage] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const tokenRef = useRef<string>(token);
+  const activeParkingOwnerRef = useRef<string | null>(null);
 
   const ownerIdForQuery = useMemo(() => {
     if (!currentUser?.is_admin) {
@@ -403,8 +497,78 @@ function App(): JSX.Element {
       return;
     }
 
-    void refreshData(token, currentUser, ownerIdForQuery, setRecords, setLatestRecord, setUsers, setMessage);
+    void refreshData(token, currentUser, ownerIdForQuery, setRecords, setUsers, setMessage);
   }, [token, currentUser, ownerIdForQuery]);
+
+  useEffect(() => {
+    const userId = currentUser?.id ?? null;
+    if (userId !== activeParkingOwnerRef.current) {
+      activeParkingOwnerRef.current = userId;
+      if (!userId) {
+        setActiveParking(null);
+        return;
+      }
+      setActiveParking(loadActiveParkingForUser(userId));
+      return;
+    }
+    if (!userId) {
+      return;
+    }
+    saveActiveParkingForUser(userId, activeParking);
+  }, [currentUser?.id, activeParking]);
+
+  useEffect(() => {
+    if (!currentUser || !activeParking || !window.isSecureContext || !('Notification' in window)) {
+      return;
+    }
+
+    let cancelled = false;
+    let notifyInterval: number | null = null;
+
+    const emitParkingNotification = (): void => {
+      if (cancelled || Notification.permission !== 'granted') {
+        return;
+      }
+
+      if (document.visibilityState !== 'hidden') {
+        return;
+      }
+
+      try {
+        const locationText = activeParking.location_label?.trim()
+          ? ` at ${activeParking.location_label}`
+          : '';
+        new Notification('You are parked', {
+          body: `${formatActiveDuration(activeParking.started_at)} active${locationText}`,
+          tag: 'fmr-active-parking'
+        });
+      } catch {
+        // ignore notification delivery failures
+      }
+    };
+
+    const startNotifications = (): void => {
+      emitParkingNotification();
+      notifyInterval = window.setInterval(emitParkingNotification, 60000);
+    };
+
+    if (Notification.permission === 'default') {
+      void Notification.requestPermission().then((permission) => {
+        if (!cancelled && permission === 'granted') {
+          startNotifications();
+        }
+      });
+    } else if (Notification.permission === 'granted') {
+      startNotifications();
+    }
+
+    return () => {
+      cancelled = true;
+      if (notifyInterval !== null) {
+        window.clearInterval(notifyInterval);
+      }
+    };
+  }, [currentUser?.id, activeParking]);
 
   useEffect(() => {
     if (!currentUser || !message) {
@@ -453,7 +617,6 @@ function App(): JSX.Element {
     setToken('');
     setCurrentUser(null);
     setRecords([]);
-    setLatestRecord(null);
     setUsers([]);
     setScope('me');
     setActiveTab('find');
@@ -514,45 +677,45 @@ function App(): JSX.Element {
           <div className="tab-page">
             <section className="panel panel-wide">
               <div className="panel-title-row">
-                <h1>Parked?</h1>
+                <h1>{activeParking ? 'You are parked' : 'Parked?'}</h1>
               </div>
-              <ParkNowCard
-                token={token}
-                onParked={async () => {
-                  await refreshData(
-                    token,
-                    currentUser,
-                    ownerIdForQuery,
-                    setRecords,
-                    setLatestRecord,
-                    setUsers,
-                    setMessage
-                  );
-                }}
-                onError={setMessage}
-              />
-            </section>
-
-            <section className="panel">
-              <div className="panel-title-row">
-                <h2>Last parked</h2>
-              </div>
-              <LatestRecordCard
-                record={latestRecord}
-                token={token}
-                onUpdated={async () => {
-                  await refreshData(
-                    token,
-                    currentUser,
-                    ownerIdForQuery,
-                    setRecords,
-                    setLatestRecord,
-                    setUsers,
-                    setMessage
-                  );
-                }}
-                onError={setMessage}
-              />
+              {!activeParking ? (
+                <ParkNowCard
+                  onStartParking={(session) => {
+                    setActiveParking(session);
+                    setMessage('Parking started.');
+                  }}
+                  onError={setMessage}
+                />
+              ) : (
+                <ActiveParkingCard
+                  parking={activeParking}
+                  onEndParking={async () => {
+                    const formData = new FormData();
+                    if (
+                      activeParking.latitude !== null &&
+                      activeParking.longitude !== null &&
+                      activeParking.location_label?.trim()
+                    ) {
+                      formData.append('latitude', String(activeParking.latitude));
+                      formData.append('longitude', String(activeParking.longitude));
+                      formData.append('location_label', activeParking.location_label.trim());
+                    }
+                    if (activeParking.note?.trim()) {
+                      formData.append('note', activeParking.note.trim());
+                    }
+                    activeParking.photos.forEach((photo) => {
+                      formData.append('photos', dataUrlToFile(photo));
+                    });
+                    formData.append('parked_at', activeParking.started_at);
+                    await api.createRecord(token, formData);
+                    setActiveParking(null);
+                    await refreshData(token, currentUser, ownerIdForQuery, setRecords, setUsers, setMessage);
+                    setMessage('Parking session ended and saved.');
+                  }}
+                  onError={setMessage}
+                />
+              )}
             </section>
           </div>
         )}
@@ -587,7 +750,6 @@ function App(): JSX.Element {
                     currentUser,
                     ownerIdForQuery,
                     setRecords,
-                    setLatestRecord,
                     setUsers,
                     setMessage
                   );
@@ -630,7 +792,6 @@ function App(): JSX.Element {
                       currentUser,
                       ownerIdForQuery,
                       setRecords,
-                      setLatestRecord,
                       setUsers,
                       setMessage
                     );
@@ -674,18 +835,12 @@ async function refreshData(
   user: User,
   ownerIdForQuery: string | undefined,
   setRecords: (records: ParkingRecord[]) => void,
-  setLatestRecord: (record: ParkingRecord | null) => void,
   setUsers: (users: User[]) => void,
   setMessage: (message: string) => void
 ): Promise<void> {
   try {
-    const [records, latest] = await Promise.all([
-      api.listRecords(token, ownerIdForQuery),
-      api.latestRecord(token, ownerIdForQuery)
-    ]);
-
+    const records = await api.listRecords(token, ownerIdForQuery);
     setRecords(records);
-    setLatestRecord(latest);
 
     if (user.is_admin) {
       const users = await api.listUsers(token);
@@ -1036,12 +1191,10 @@ function LoginCard({
 }
 
 function ParkNowCard({
-  token,
-  onParked,
+  onStartParking,
   onError
 }: {
-  token: string;
-  onParked: () => Promise<void>;
+  onStartParking: (session: ActiveParkingSession) => void;
   onError: (message: string) => void;
 }): JSX.Element {
   const [note, setNote] = useState('');
@@ -1267,29 +1420,29 @@ function ParkNowCard({
                 }
               }
 
-              const formData = new FormData();
-              if (location) {
-                formData.append('latitude', String(location.latitude));
-                formData.append('longitude', String(location.longitude));
-                formData.append('location_label', location.placeLabel);
-              }
-              if (note.trim()) {
-                formData.append('note', note.trim());
-              }
-              formData.append('parked_at', new Date().toISOString());
-              photoSlots.forEach((file) => {
-                if (file) {
-                  formData.append('photos', file);
-                }
+              const photos = await Promise.all(
+                photoSlots
+                  .filter((file): file is File => Boolean(file))
+                  .map(async (file, index) => ({
+                    id: `photo-${index + 1}`,
+                    name: file.name || `parking-photo-${index + 1}.jpg`,
+                    type: file.type || 'image/jpeg',
+                    data_url: await fileToDataUrl(file)
+                  }))
+              );
+              const now = new Date().toISOString();
+              onStartParking({
+                started_at: now,
+                latitude: location ? location.latitude : null,
+                longitude: location ? location.longitude : null,
+                location_label: location ? location.placeLabel : null,
+                note: note.trim() || null,
+                photos
               });
-
-              await api.createRecord(token, formData);
               setNote('');
               setPhotoSlots([null, null, null]);
               setLocatedFix(null);
               setLocateState('idle');
-              await onParked();
-              onError('Parking location saved.');
             } catch (error) {
               onError((error as Error).message);
             } finally {
@@ -1304,33 +1457,99 @@ function ParkNowCard({
   );
 }
 
-function LatestRecordCard({
-  record,
-  token,
-  onUpdated,
+function ActiveParkingCard({
+  parking,
+  onEndParking,
   onError
 }: {
-  record: ParkingRecord | null;
-  token: string;
-  onUpdated: () => Promise<void>;
+  parking: ActiveParkingSession;
+  onEndParking: () => Promise<void>;
   onError: (message: string) => void;
 }): JSX.Element {
-  if (!record) {
-    return <p className="muted">No records yet. Save a parking spot to get started.</p>;
-  }
+  const [confirmEnd, setConfirmEnd] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [clockMs, setClockMs] = useState(Date.now());
+  const hasLocation = parking.latitude !== null && parking.longitude !== null;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setClockMs(Date.now());
+    }, 30000);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
 
   return (
-    <div className="history-list">
-      <RecordCard
-        record={record}
-        token={token}
-        onError={onError}
-        onDelete={async () => {
-          await api.deleteRecord(token, record.id);
-          await onUpdated();
-          onError('Record deleted.');
-        }}
-      />
+    <div className="stack">
+      <p className="small-meta">
+        Started {formatDateTime(parking.started_at)}. Active {formatActiveDuration(parking.started_at, clockMs)}.
+      </p>
+
+      {hasLocation ? (
+        <>
+          <p className="muted history-location parking-active-location">{parking.location_label}</p>
+          <iframe
+            className="detail-map-frame"
+            src={openStreetMapEmbedUrl(parking.latitude as number, parking.longitude as number)}
+            title="OpenStreetMap preview of parked location"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        </>
+      ) : (
+        <p className="small-meta">Location unavailable for this active parking session.</p>
+      )}
+
+      {parking.note ? (
+        <div className="stack">
+          <h4 className="section-heading">More details</h4>
+          <p className="note record-note">{parking.note}</p>
+        </div>
+      ) : null}
+
+      {parking.photos.length > 0 ? (
+        <div className="photo-grid">
+          {parking.photos.map((photo) => (
+            <img key={photo.id} className="photo-thumb" src={photo.data_url} alt="Parking photo evidence" />
+          ))}
+        </div>
+      ) : null}
+
+      {!confirmEnd ? (
+        <button className="btn danger" type="button" disabled={ending} onClick={() => setConfirmEnd(true)}>
+          End parking
+        </button>
+      ) : (
+        <section className="end-parking-confirm" role="alertdialog" aria-label="End parking confirmation">
+          <p className="muted">Really end parking?</p>
+          <div className="button-row">
+            <button
+              className="btn danger"
+              type="button"
+              disabled={ending}
+              onClick={() => {
+                setEnding(true);
+                void (async () => {
+                  try {
+                    await onEndParking();
+                  } catch (error) {
+                    onError((error as Error).message);
+                  } finally {
+                    setEnding(false);
+                    setConfirmEnd(false);
+                  }
+                })();
+              }}
+            >
+              {ending ? 'Ending...' : 'Yes, end parking'}
+            </button>
+            <button className="btn secondary" type="button" disabled={ending} onClick={() => setConfirmEnd(false)}>
+              No
+            </button>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

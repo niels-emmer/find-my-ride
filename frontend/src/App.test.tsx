@@ -169,6 +169,7 @@ describe('App tabs and settings', () => {
     render(<App />);
 
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Last parked' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'home' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'history' }));
@@ -589,6 +590,25 @@ describe('App tabs and settings', () => {
     expect(screen.getByLabelText('Capture photo 1')).toBeInTheDocument();
   });
 
+  it('shows selected photo thumbnails in active parking view', async () => {
+    seedAuthenticatedSession(false);
+    mockGeolocationFailure('No signal');
+
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+    const firstPhotoInput = screen.getByLabelText('Capture photo 1');
+    const file = new File(['image-data'], 'level-b2.jpg', { type: 'image/jpeg' });
+    fireEvent.input(firstPhotoInput, { target: { files: [file] } });
+    fireEvent.change(screen.getByLabelText('Note (optional)'), {
+      target: { value: 'B2 near blue elevator' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+
+    expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
+    expect(await screen.findByAltText('Parking photo evidence')).toBeInTheDocument();
+  });
+
   it('syncs selected camera file when browser returns focus without change callback', async () => {
     seedAuthenticatedSession(false);
 
@@ -619,33 +639,34 @@ describe('App tabs and settings', () => {
     expect(screen.queryByText(/Samsung Internet note/)).not.toBeInTheDocument();
   });
 
-  it('uses the same expandable card layout for last parked and supports delete', async () => {
+  it('switches home to active parking state and saves only after explicit end confirmation', async () => {
     seedAuthenticatedSession(false);
-    const record = buildRecord({ note: null, photos: [] });
-    apiMock.listRecords.mockResolvedValue([record]);
-    apiMock.latestRecord.mockResolvedValue(record);
+    mockGeolocationFailure('No signal');
 
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
-    expect(screen.getByText('Battery Park Garage, New York')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'More info' })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'More info' }));
-    expect(await screen.findByRole('heading', { name: 'More details' })).toBeInTheDocument();
-    expect(screen.getByText('No note saved.')).toBeInTheDocument();
-    expect(await screen.findByRole('heading', { name: 'Take me there' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Google Maps' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'OpenStreetMap' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Actions' })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(screen.queryByRole('link', { name: 'Google Maps' })).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
-    await waitFor(() => {
-      expect(apiMock.deleteRecord).toHaveBeenCalledWith('token-123', 'record-1');
+    fireEvent.change(screen.getByLabelText('Note (optional)'), {
+      target: { value: 'B2 near blue elevator' }
     });
+    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+
+    expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
+    expect(screen.getByText('B2 near blue elevator')).toBeInTheDocument();
+    expect(apiMock.createRecord).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'End parking' }));
+    expect(await screen.findByText('Really end parking?')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'No' }));
+    expect(screen.queryByText('Really end parking?')).not.toBeInTheDocument();
+    expect(apiMock.createRecord).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'End parking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, end parking' }));
+    await waitFor(() => {
+      expect(apiMock.createRecord).toHaveBeenCalledTimes(1);
+    });
+    expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
   });
 
   it('renders history cards with saved address and expandable details', async () => {
@@ -676,7 +697,7 @@ describe('App tabs and settings', () => {
     fetchMock.mockRestore();
   });
 
-  it('saves record without coordinates when note is provided and location fails', async () => {
+  it('saves record without coordinates when ending a note-only parking session', async () => {
     seedAuthenticatedSession(false);
     mockGeolocationFailure('No signal');
 
@@ -688,6 +709,11 @@ describe('App tabs and settings', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
 
+    expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
+    expect(apiMock.createRecord).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'End parking' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Yes, end parking' }));
     await waitFor(() => {
       expect(apiMock.createRecord).toHaveBeenCalledTimes(1);
     });
@@ -697,7 +723,7 @@ describe('App tabs and settings', () => {
     expect(formData.get('longitude')).toBeNull();
   });
 
-  it('includes location label when save uses a successful locate result', async () => {
+  it('includes location label when ending a session started with a successful locate result', async () => {
     seedAuthenticatedSession(false);
     mockGeolocationSuccess(40.7128, -74.006);
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
@@ -719,6 +745,10 @@ describe('App tabs and settings', () => {
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'End parking' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Yes, end parking' }));
 
     await waitFor(() => {
       expect(apiMock.createRecord).toHaveBeenCalledTimes(1);
@@ -727,6 +757,82 @@ describe('App tabs and settings', () => {
     expect(formData.get('location_label')).toBe('Damrak 12, 1012 LG Amsterdam, Noord-Holland, Netherlands');
 
     fetchMock.mockRestore();
+  });
+
+  it('restores an active parking session from local storage after app reload', async () => {
+    seedAuthenticatedSession(false);
+    localStorage.setItem(
+      'fmr_active_parking_by_user_v1',
+      JSON.stringify({
+        'user-id': {
+          started_at: new Date(Date.now() - 75 * 60000).toISOString(),
+          latitude: null,
+          longitude: null,
+          location_label: null,
+          note: 'Sticky session note',
+          photos: []
+        }
+      })
+    );
+
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
+    expect(screen.getByText('Sticky session note')).toBeInTheDocument();
+    expect(screen.getByText(/Active \d+h \d{2}m\./)).toBeInTheDocument();
+  });
+
+  it('requests browser notifications for active parking sessions when available', async () => {
+    seedAuthenticatedSession(false);
+    mockGeolocationFailure('No signal');
+
+    const notificationCalls = vi.fn();
+    const visibilityDescriptor = Object.getOwnPropertyDescriptor(document, 'visibilityState');
+    const notificationDescriptor = Object.getOwnPropertyDescriptor(window, 'Notification');
+    class NotificationMock {
+      static permission: NotificationPermission = 'default';
+      static requestPermission = vi.fn(async (): Promise<NotificationPermission> => {
+        NotificationMock.permission = 'granted';
+        return 'granted';
+      });
+
+      constructor(title: string, options?: NotificationOptions) {
+        notificationCalls(title, options);
+      }
+    }
+
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      value: 'hidden'
+    });
+    Object.defineProperty(window, 'Notification', {
+      configurable: true,
+      value: NotificationMock
+    });
+
+    try {
+      render(<App />);
+      expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+      fireEvent.change(screen.getByLabelText('Note (optional)'), {
+        target: { value: 'B2 near blue elevator' }
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+
+      await waitFor(() => {
+        expect(NotificationMock.requestPermission).toHaveBeenCalledTimes(1);
+      });
+      await waitFor(() => {
+        expect(notificationCalls).toHaveBeenCalled();
+      });
+    } finally {
+      if (visibilityDescriptor) {
+        Object.defineProperty(document, 'visibilityState', visibilityDescriptor);
+      }
+      if (notificationDescriptor) {
+        Object.defineProperty(window, 'Notification', notificationDescriptor);
+      }
+    }
   });
 
   it('treats reverse-lookup failure as unavailable for address-based saves', async () => {

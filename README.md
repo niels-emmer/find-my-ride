@@ -22,7 +22,10 @@ Docs are available in `docs/INDEX.md` (source) and `site/INDEX/index.html` (gene
 - Save fallback for garages: when location is unavailable, save is still allowed with a note and/or photos
 - 3 photo capture slots with thumbnail preview/replace (mobile camera-friendly, no browse-only flow)
 - Samsung Internet fallback: camera mode uses picker path (no forced `capture` attribute) for better PWA reliability
-- Last parked and history cards share an expandable layout with `More info` details
+- Home uses a sticky two-state parking flow: `Parked?` capture screen switches to `You are parked` until manually ended
+- Active parking state shows start time, running duration, optional location map, note, and photo thumbnails
+- Ending parking uses explicit yes/no confirmation and only writes the session to history on confirmation
+- Active parking can trigger browser notifications (when granted) with running parked duration updates
 - Expanded details show OpenStreetMap map preview, a `More details` section for notes, photo thumbnails, `Take me there`, and `Actions` sections
 - History list provides quick `More info` and `Delete` actions per record
 - Saved addresses are normalized in street-first format (for example `Street 12, ZIP City, Province, Country`)

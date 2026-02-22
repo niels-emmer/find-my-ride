@@ -105,7 +105,7 @@ Endpoints:
 ## UI navigation
 
 - The authenticated app uses 3 fixed bottom tabs:
-  - `home`: new location capture + last parked
+  - `home`: parking start capture + active parking session
   - `history`: record history with expandable details and delete
   - `settings`: profile and admin
 - Top app bar:
@@ -115,7 +115,12 @@ Endpoints:
   - file: `frontend/public/images/parking-background-option-3.jpg`
   - source: `https://www.pexels.com/photo/a-modern-car-in-an-underground-garage-16304132/`
   - license: `https://www.pexels.com/license/`
-- `home` and `history` record cards:
+- `home` state flow:
+  - default shows `Parked?` capture form (Locate, note, up to 3 photos)
+  - after `Park Here Now`, app switches to `You are parked` with start timestamp + running duration
+  - active panel shows optional location map, note, thumbnails, and `End parking` confirmation (yes/no)
+  - active session is sticky per user across app close/reopen via local browser persistence
+- `history` record cards:
   - collapsed view shows time/date, saved location text, and quick actions
   - `More info` expands details with OpenStreetMap embed preview, a `More details` note section, thumbnails, and a `Take me there` section
   - `Delete` removes the record

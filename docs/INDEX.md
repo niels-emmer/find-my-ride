@@ -14,10 +14,12 @@ This is the project memory entrypoint for engineers and agents.
 - PWA update path hardened: service worker cache/version is keyed by `APP_VERSION` (release tag) with network-first navigation fetch
 - Login UX uses a two-phase MFA flow: username/password first, OTP modal only when required
 - MFA setup renders a QR code (from provisioning URI) above the secret for authenticator app scan
-- Parking workflow implemented: create records with optional geo + note + up to 3 photos (location pair or evidence required), persist location label text, view latest, and delete records
+- Parking workflow implemented: start sticky active parking sessions (location or note/photo evidence required), then end/save to history with optional geo + note + up to 3 photos
 - Frontend navigation implemented as fixed bottom tabs: home, history, settings
 - Home capture uses locate (GPS + reverse place lookup) with explicit no-reception state and 3 photo capture slots with previews; note/photo fallback supports no-GPS garage saves
-- Last parked and history use expandable record cards (`More info`/`Close`) with map preview, location text, photos, and direction links
+- Home switches to `You are parked` after start, showing start date/time, running duration, optional map, notes, thumbnails, and `End parking` confirmation
+- Active parking survives app close/reopen via local persistence and can emit browser notifications while parked
+- History uses expandable record cards (`More info`/`Close`) with map preview, location text, photos, and direction links
 - Coordinates with coordinate-style labels are blocked by API validation to keep stored addresses human-readable
 - Top app bar includes account menu (signed-in identity + sign-out)
 - Settings profile includes password change, theme switcher, theme-aware accent color presets, and MFA controls

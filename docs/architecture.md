@@ -51,7 +51,7 @@ Single-page React app with feature sections:
 - Login flow is two-phase for MFA users: username/password first, then OTP in a modal when challenged
 - MFA setup shows a locally generated QR code above the TOTP secret, using the backend `otpauth_url`
 - Bottom-tab navigation:
-  - `home`: store new location + last parked
+  - `home`: start parking + active parking session (sticky until ended)
   - `history`: record history + details + delete
   - `settings`: profile + admin (admin-only)
 - Top app bar with account menu for signed-in identity and sign-out
@@ -63,9 +63,12 @@ Single-page React app with feature sections:
 - Camera file selection is additionally synchronized on `focus`/`visibilitychange` to handle mobile camera-app round trips
 - Park-now location state is explicit (`ready` with place/coords or `No reception`)
 - On non-secure contexts (common on HTTP LAN URLs), location state surfaces an HTTPS requirement hint for mobile browsers
-- Park-now save accepts either a valid location pair or note/photo evidence, allowing garage use when GPS is unavailable
+- Park-now start accepts either a valid location pair or note/photo evidence, allowing garage use when GPS is unavailable
 - Park-now requires a resolved physical `location_label` when coordinates are saved (coordinate-style labels are rejected)
-- Last parked and history share expandable cards (`More info`/`Close`) with OpenStreetMap embed preview, saved location text, a `More details` note section, photo thumbnails, and route/actions sections
+- Home active state (`You are parked`) shows start timestamp, running duration, optional location map, notes, and thumbnails until user confirms `End parking`
+- Active parking session is persisted per user in browser storage so app restarts restore the in-progress state
+- Active parking can emit browser notifications with parked duration when notification permission is granted
+- History cards use expandable (`More info`/`Close`) details with OpenStreetMap embed preview, saved location text, a `More details` note section, photo thumbnails, and route/actions sections
 - Date/time rendering in cards is day-first (`dd-mm-yyyy`) with browser-local time
 - History cards provide quick delete action from collapsed state
 - Profile controls: change password, MFA setup/verify/disable, theme mode switch, and accent color preset selection (theme-aware tones, stored client-side)

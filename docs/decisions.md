@@ -192,3 +192,16 @@
   - Footer links repo name to `REPO_URL` and release ref to `REPO_URL/commit/<RELEASE_SHA>` when set.
   - Frontend reads `VITE_APP_VERSION`, `VITE_RELEASE_SHA`, and `VITE_REPO_URL` with safe defaults.
   - Compose/dev/prod configs expose `APP_VERSION`, `RELEASE_SHA`, and `REPO_URL` for consistent builds.
+
+## ADR-025: Sticky active parking session on home
+
+- Date: 2026-02-22
+- Status: accepted
+- Decision: Replace `Last parked` on home with a two-state flow: `Parked?` start form and `You are parked` active session panel that ends only on explicit confirmation.
+- Why: Matches real parking behavior, prevents accidental history writes before a parking action is complete, and improves day-of-use orientation while parked.
+- Details:
+  - `Park Here Now` starts a local active session when location or note/photo evidence exists.
+  - Active session shows start time, running duration, optional map, notes, and photo thumbnails.
+  - `End parking` requires yes/no confirmation and writes the record to history only after confirmation.
+  - Active session is persisted per user in browser local storage to survive app close/reopen.
+  - While active and permission granted, browser notifications can display parked duration updates.
