@@ -11,7 +11,7 @@ nav:
   - Security: security.md
 
 theme:
-  name: material
+  name: readthedocs
   features:
     - navigation.sections
     - navigation.expand

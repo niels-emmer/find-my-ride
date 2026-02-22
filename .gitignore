@@ -30,7 +30,6 @@ backend/.mypy_cache/
 coverage/
 htmlcov/
 data/uploads/
-site/
 
 # Docker
 *.log
