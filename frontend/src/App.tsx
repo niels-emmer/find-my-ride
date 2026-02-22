@@ -355,6 +355,7 @@ function App(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
   const tokenRef = useRef<string>(token);
   const activeParkingOwnerRef = useRef<string | null>(null);
+  const manualLogoutRef = useRef<boolean>(false);
 
   const ownerIdForQuery = useMemo(() => {
     if (!currentUser?.is_admin) {
@@ -460,6 +461,13 @@ function App(): JSX.Element {
       };
 
       if (!token) {
+        if (manualLogoutRef.current) {
+          if (active) {
+            setCurrentUser(null);
+            setLoading(false);
+          }
+          return;
+        }
         const refreshed = await tryRefresh();
         if (!refreshed && active) {
           setCurrentUser(null);
@@ -592,6 +600,7 @@ function App(): JSX.Element {
   }, [currentUser, message]);
 
   const handleAuthSuccess = (nextToken: string, user: User): void => {
+    manualLogoutRef.current = false;
     localStorage.setItem(TOKEN_KEY, nextToken);
     setToken(nextToken);
     setCurrentUser(user);
@@ -609,6 +618,7 @@ function App(): JSX.Element {
   };
 
   const handleLogout = (): void => {
+    manualLogoutRef.current = true;
     void api.logout().catch(() => {
       // local logout still applies if backend logout fails
     });

@@ -416,6 +416,43 @@ describe('App tabs and settings', () => {
     expect(apiMock.logout).toHaveBeenCalledTimes(1);
   });
 
+  it('does not auto-refresh back into the app after manual logout', async () => {
+    seedAuthenticatedSession(false);
+
+    apiMock.logout.mockImplementation(
+      () =>
+        new Promise<{ message: string }>((resolve) => {
+          window.setTimeout(() => {
+            resolve({ message: 'Signed out' });
+          }, 200);
+        })
+    );
+    apiMock.refresh.mockResolvedValue({
+      access_token: 'restored-after-logout',
+      token_type: 'bearer',
+      user: {
+        id: 'user-id',
+        username: 'driver',
+        is_admin: false,
+        mfa_enabled: false,
+        created_at: new Date().toISOString()
+      }
+    });
+
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('Open user menu'));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
+    expect(apiMock.logout).toHaveBeenCalledTimes(1);
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 50);
+    });
+    expect(apiMock.refresh).not.toHaveBeenCalled();
+  });
+
   it('shows admin section and history scope selector only for admins', async () => {
     seedAuthenticatedSession(true);
 

@@ -80,6 +80,7 @@ Endpoints:
 - Backend rotates refresh token on every successful refresh and stores only a hashed token in DB.
 - Logout revokes only the current refresh token and clears cookie.
 - Password changes (self-service or admin reset) revoke all refresh tokens for that user.
+- Manual logout in the UI disables same-session auto-refresh recovery to avoid mobile race conditions where slow logout responses could re-authenticate immediately.
 
 ## Parking capture flow
 
