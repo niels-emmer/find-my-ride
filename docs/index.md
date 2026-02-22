@@ -42,6 +42,7 @@ Core flow:
 - Short-lived access token + rotating refresh token cookie
 - Session restoration on app startup using refresh endpoint
 - Refresh-token revocation on logout and password changes
+- Manual logout guard blocks same-session silent refresh to prevent mobile logout/refresh race re-authentication
 - Input validation/sanitization on API boundaries
 - Security scan workflow available (`make security-scan`)
 
@@ -50,6 +51,7 @@ Core flow:
 - `Parked?` form supports location and no-GPS fallback using notes/photos
 - In-app camera capture (`getUserMedia`) with gallery fallback
 - Tap-to-expand full-size image previews for parking photos
+- Home tab layout hardened for mobile to prevent horizontal overflow and off-screen bottom navigation
 - Active parking card includes:
   - started time
   - running duration

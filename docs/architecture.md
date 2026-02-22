@@ -74,6 +74,7 @@ Single-page React app with feature sections:
 - History cards use expandable (`More info`/`Close`) details with OpenStreetMap embed preview, saved location text, a `More details` note section, photo thumbnails, and route/actions sections
 - Date/time rendering in cards is day-first (`dd-mm-yyyy`) with browser-local time
 - History cards provide quick delete action from collapsed state
+- Mobile home layout applies horizontal overflow guards to prevent off-screen content and bottom-tab drift
 - Profile controls: change password, MFA setup/verify/disable, theme mode switch, and accent color preset selection (theme-aware tones, stored client-side)
 - Admin user management and history scope filtering (`Admin` > `Add users` + `Edit users` list with edit/delete actions and role/password modal)
 
@@ -96,6 +97,7 @@ PWA support:
 - Refresh token cookie is HttpOnly and scoped to `/api/auth`; backend rotates refresh token on every refresh
 - Refresh token replay/expired/revoked checks revoke active refresh sessions for that user before rejecting
 - Refresh tokens are revoked on logout, self password change, and admin password reset
+- Manual logout sets a client guard that suppresses same-session silent refresh recovery, avoiding mobile race conditions after sign-out
 - Frontend retries once on `401` by refreshing and replaying the original API request
 - Route-level auth dependency (`get_current_user`) + admin guard (`get_admin_user`)
 - Owner-based row access checks for parking records/photos

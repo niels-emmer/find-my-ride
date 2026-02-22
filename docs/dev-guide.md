@@ -113,6 +113,7 @@ Endpoints:
 - Top app bar:
   - app brand on the left
   - account icon menu on the right with signed-in user and sign-out action
+- Home-tab mobile layout includes horizontal overflow guards to prevent off-screen content and shifted bottom navigation.
 - Background image asset:
   - file: `frontend/public/images/parking-background-option-3.jpg`
   - source: `https://www.pexels.com/photo/a-modern-car-in-an-underground-garage-16304132/`

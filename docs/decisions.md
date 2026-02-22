@@ -205,6 +205,28 @@
   - Active session is persisted per user in browser local storage to survive app close/reopen.
   - While active and permission granted, browser notifications can display parked duration updates.
 
+## ADR-026: Manual logout must suppress same-session silent refresh
+
+- Date: 2026-02-22
+- Status: accepted
+- Decision: When logout is user-initiated, set a client-side manual-logout guard that blocks the no-token startup refresh path in the same app session.
+- Why: Prevents mobile timing races where `/auth/logout` completion can lag and a background refresh could immediately re-authenticate the user after they sign out.
+- Details:
+  - Guard is enabled in logout handler before token state is cleared.
+  - Guard is reset on explicit authentication success (login/register/bootstrap).
+  - API-level token revocation behavior remains unchanged (refresh token revoked server-side).
+
+## ADR-027: Mobile home layout overflow guard
+
+- Date: 2026-02-22
+- Status: accepted
+- Decision: Add horizontal overflow constraints and min-width guards on key home-tab layout containers and long-text blocks.
+- Why: Fixes mobile-specific rightward overflow that caused off-screen background exposure and apparent bottom-tab shift on the home tab.
+- Details:
+  - Apply root horizontal clipping.
+  - Add `min-width: 0` to grid/flex containers that host wide content.
+  - Allow long labels/metadata to wrap safely in narrow viewports.
+
 ## Related docs
 
 - [Docs index](index.md)
