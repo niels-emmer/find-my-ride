@@ -4,8 +4,8 @@
 
 Use it in a parking garage, city lot, or unfamiliar area: start a parking session, save location/note/photos, and later open history to get back to your car quickly.
 
-Documentation entrypoint: `docs/index.md`  
-Generated docs site (local build output): `site/index.html`
+Documentation entrypoint: [docs/index.md](docs/index.md)  
+Generated (MKdocs) documentation: [https://niels-emmer.github.io/find-my-ride/](https://niels-emmer.github.io/find-my-ride/)
 
 ## Screenshots (Mobile)
 
