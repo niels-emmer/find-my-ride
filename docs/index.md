@@ -76,6 +76,7 @@ Core flow:
 - Run frontend tests: `make test-frontend`
 - Build docs: `./.venv-docs/bin/mkdocs build`
 - Serve docs locally: `./.venv-docs/bin/mkdocs serve -a 127.0.0.1:8001`
+- Refresh README screenshots: `./scripts/readme-screenshots/refresh.sh`
 
 ## Source-of-truth policy
 

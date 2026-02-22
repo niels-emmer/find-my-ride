@@ -227,6 +227,17 @@
   - Add `min-width: 0` to grid/flex containers that host wide content.
   - Allow long labels/metadata to wrap safely in narrow viewports.
 
+## ADR-028: Keep README screenshot refresh automation in-repo
+
+- Date: 2026-02-22
+- Status: accepted
+- Decision: Store the README screenshot refresh workflow in `scripts/readme-screenshots/` with committed Playwright capture logic and SQL seed data.
+- Why: Reduces repeat manual setup work, keeps screenshot capture states reproducible across agents, and avoids ad-hoc one-off scripts.
+- Details:
+  - `refresh.sh` authenticates a demo user, applies deterministic history seed data, and runs the capture script.
+  - `seed_history.sql` sets fixed sample rows so `history` capture state remains stable (second row expanded with map and no note/photos).
+  - `capture.mjs` enforces required dimensions (`1170x1992`), theme (`dark` + `evergreen`), and `2.0x` visual zoom.
+
 ## Related docs
 
 - [Docs index](index.md)

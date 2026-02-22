@@ -21,6 +21,7 @@ venv/
 # Node
 frontend/node_modules/
 frontend/dist/
+scripts/readme-screenshots/node_modules/
 package-lock.json
 
 # Runtime data

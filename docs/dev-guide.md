@@ -156,13 +156,15 @@ When changing code:
 
 When refreshing README screenshots (`docs/assets/screenshots/home.png`, `history.png`, `settings.png`), keep these capture defaults so the README layout stays consistent:
 
+- Canonical automation: `./scripts/readme-screenshots/refresh.sh`
 - Output format/size: PNG at `1170x1992` for each image.
 - Visual scale: apply `2.0x` page zoom during capture so card text and controls remain readable in the 3-up README gallery.
 - Theme: dark mode (`fmr_theme_mode=dark`) with the default `evergreen` accent.
 - Environment: run against the local Docker stack (`docker compose up -d --build`) on the frontend URL (`http://127.0.0.1:${FRONTEND_PORT}`; current default in this repo is `15173`).
-- Data setup: use a dedicated demo account (currently `readme_demo`) with at least 3 history rows:
+- Data setup: use the dedicated demo account (`readme_demo` by default, configurable via `README_DEMO_USERNAME`) with at least 3 history rows:
   - at least 2 rows with stored geocoded `location_label` + coordinates
   - at least 1 row without location (note/photo fallback state)
+  - if the configured username already exists with a different password, the automation falls back to a timestamp-suffixed username for that run
 - Required capture states:
   - `home`: `Parked?` card with a resolved location label (Locate pressed state) and sample note text (`2nd level, section 3d near stairs`)
   - `history`: second record from the top expanded via `More info`, with OpenStreetMap embed visible and no note/photos on that expanded row
@@ -170,7 +172,7 @@ When refreshing README screenshots (`docs/assets/screenshots/home.png`, `history
 - Capture hygiene:
   - dismiss transient toasts before each screenshot
   - avoid camera/mfa modal overlays
-  - commit only the screenshot assets (no temporary local capture scripts)
+  - keep committed automation in `scripts/readme-screenshots/`; do not commit one-off local capture helpers
 
 ## One-time backfill for old address labels
 
