@@ -538,7 +538,8 @@ describe('App tabs and settings', () => {
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Photo source')).not.toBeInTheDocument();
     expect(screen.queryByText(/Samsung Internet note/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Location' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Location' })).not.toBeInTheDocument();
+    expect(screen.getByText('Photos (optional, 0/3)')).toBeInTheDocument();
 
     const firstPhotoInput = screen.getByLabelText('Capture photo 1');
     const file = new File(['image-data'], 'level-b2.jpg', { type: 'image/jpeg' });

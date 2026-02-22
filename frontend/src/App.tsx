@@ -1043,6 +1043,33 @@ function ParkNowCard({
         Use Locate for a GPS fix when available. If GPS fails, you can still save with notes and/or photos.
       </p>
 
+      <div className="stack">
+        <button
+          className="btn secondary"
+          type="button"
+          disabled={saving || locating}
+          onClick={() => {
+            void runLocate();
+          }}
+        >
+          {locating ? 'Locating...' : 'Locate'}
+        </button>
+        {locateState === 'ready' && locatedFix ? (
+          <p className="small-meta">
+            {locatedFix.placeLabel}
+            <br />
+            {coordinateLabel(locatedFix.latitude, locatedFix.longitude)}
+          </p>
+        ) : locateState === 'unavailable' ? (
+          <>
+            <p className="small-meta error">No reception</p>
+            {locateHint ? <p className="small-meta">{locateHint}</p> : null}
+          </>
+        ) : (
+          <p className="small-meta">Tap Locate to confirm position.</p>
+        )}
+      </div>
+
       <label className="field">
         Note (optional)
         <textarea
@@ -1054,9 +1081,8 @@ function ParkNowCard({
         />
       </label>
 
-      <div className="stack">
-        <h3 className="section-heading">Photos (optional, max 3)</h3>
-        <p className="small-meta">Selected: {photoSlots.filter(Boolean).length}/3</p>
+      <div className="field">
+        <span>Photos (optional, {photoSlots.filter(Boolean).length}/3)</span>
         <div className="capture-grid">
           {photoSlots.map((file, index) => {
             const inputId = `park-photo-slot-${index + 1}`;
@@ -1100,56 +1126,26 @@ function ParkNowCard({
                   )}
                 </div>
                 {file ? (
-                  <>
-                    <button
-                      className="btn secondary tiny"
-                      type="button"
-                      onClick={() => {
-                        const input = photoInputRefs.current[index];
-                        if (input) {
-                          input.value = '';
-                        }
-                        setPhotoSlots((previous) =>
-                          previous.map((entry, entryIndex) => (entryIndex === index ? null : entry))
-                        );
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </>
+                  <button
+                    className="btn secondary tiny"
+                    type="button"
+                    onClick={() => {
+                      const input = photoInputRefs.current[index];
+                      if (input) {
+                        input.value = '';
+                      }
+                      setPhotoSlots((previous) =>
+                        previous.map((entry, entryIndex) => (entryIndex === index ? null : entry))
+                      );
+                    }}
+                  >
+                    Remove
+                  </button>
                 ) : null}
               </div>
             );
           })}
         </div>
-      </div>
-
-      <div className="stack">
-        <h3 className="section-heading">Location</h3>
-        <button
-          className="btn secondary"
-          type="button"
-          disabled={saving || locating}
-          onClick={() => {
-            void runLocate();
-          }}
-        >
-          {locating ? 'Locating...' : 'Locate'}
-        </button>
-        {locateState === 'ready' && locatedFix ? (
-          <p className="small-meta">
-            {locatedFix.placeLabel}
-            <br />
-            {coordinateLabel(locatedFix.latitude, locatedFix.longitude)}
-          </p>
-        ) : locateState === 'unavailable' ? (
-          <>
-            <p className="small-meta error">No reception</p>
-            {locateHint ? <p className="small-meta">{locateHint}</p> : null}
-          </>
-        ) : (
-          <p className="small-meta">Tap Locate to confirm position.</p>
-        )}
       </div>
 
       <button
