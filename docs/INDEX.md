@@ -17,7 +17,7 @@ This is the project memory entrypoint for engineers and agents.
 - Parking workflow implemented: start sticky active parking sessions (location or note/photo evidence required), then end/save to history with optional geo + note + up to 3 photos
 - Frontend navigation implemented as fixed bottom tabs: home, history, settings
 - Home capture uses locate (GPS + reverse place lookup) with explicit no-reception state and 3 photo capture slots with previews (in-app camera capture + gallery fallback); note/photo fallback supports no-GPS garage saves
-- Home switches to `You are parked` after start, showing start date/time, running duration, optional map, notes, thumbnails, and `End parking` confirmation
+- Home switches to `You are parked` after start, showing start date/time, running duration, optional map, notes, thumbnails, `Take me there` map links (when location exists), and `End parking` under `Actions`
 - Active parking survives app close/reopen via local persistence and can emit browser notifications while parked
 - History uses expandable record cards (`More info`/`Close`) with map preview, location text, photos, and direction links; photo thumbnails open full-size on tap/click
 - Coordinates with coordinate-style labels are blocked by API validation to keep stored addresses human-readable

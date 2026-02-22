@@ -1791,6 +1791,31 @@ function ActiveParkingCard({
         </div>
       ) : null}
 
+      {hasLocation ? (
+        <>
+          <h4 className="section-heading">Take me there</h4>
+          <div className="button-row">
+            <a
+              className="btn"
+              href={googleMapsDirectionsUrl(parking.latitude as number, parking.longitude as number)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Google Maps
+            </a>
+            <a
+              className="btn secondary"
+              href={openStreetMapUrl(parking.latitude as number, parking.longitude as number)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              OpenStreetMap
+            </a>
+          </div>
+        </>
+      ) : null}
+
+      <h4 className="section-heading">Actions</h4>
       {!confirmEnd ? (
         <button className="btn danger" type="button" disabled={ending} onClick={() => setConfirmEnd(true)}>
           End parking

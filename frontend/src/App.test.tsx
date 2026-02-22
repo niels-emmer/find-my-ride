@@ -829,6 +829,48 @@ describe('App tabs and settings', () => {
     fetchMock.mockRestore();
   });
 
+  it('shows take-me-there links and actions section while active parking has a location', async () => {
+    seedAuthenticatedSession(false);
+    mockGeolocationSuccess(40.7128, -74.006);
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        display_name: 'ignore me',
+        address: {
+          road: 'Damrak',
+          house_number: '12',
+          postcode: '1012 LG',
+          city: 'Amsterdam',
+          state: 'Noord-Holland',
+          country: 'Netherlands'
+        }
+      })
+    } as Response);
+
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Park Here Now' }));
+    expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
+
+    expect(screen.getByRole('heading', { name: 'Take me there' })).toBeInTheDocument();
+    const googleMapsLink = screen.getByRole('link', { name: 'Google Maps' });
+    const openStreetMapLink = screen.getByRole('link', { name: 'OpenStreetMap' });
+    expect(googleMapsLink).toHaveAttribute(
+      'href',
+      'https://www.google.com/maps/dir/?api=1&destination=40.7128,-74.006&travelmode=walking'
+    );
+    expect(openStreetMapLink).toHaveAttribute(
+      'href',
+      'https://www.openstreetmap.org/?mlat=40.7128&mlon=-74.006#map=18/40.7128/-74.006'
+    );
+
+    expect(screen.getByRole('heading', { name: 'Actions' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'End parking' })).toBeInTheDocument();
+
+    fetchMock.mockRestore();
+  });
+
   it('restores an active parking session from local storage after app reload', async () => {
     seedAuthenticatedSession(false);
     localStorage.setItem(
