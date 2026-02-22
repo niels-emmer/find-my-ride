@@ -179,8 +179,23 @@ describe('App tabs and settings', () => {
     expect(await screen.findByRole('heading', { name: 'Profile' })).toBeInTheDocument();
 
     expect(screen.getByLabelText('Appearance')).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: 'Accent color' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Admin' })).not.toBeInTheDocument();
+  });
+
+  it('updates accent color live from settings profile', async () => {
+    seedAuthenticatedSession(false);
+
+    render(<App />);
+    fireEvent.click(await screen.findByRole('button', { name: 'settings' }));
+    expect(await screen.findByRole('heading', { name: 'Profile' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Cobalt' }));
+
+    expect(document.documentElement.style.getPropertyValue('--ui-accent')).toBe('#1f4f8a');
+    expect(document.documentElement.style.getPropertyValue('--ui-accent-strong')).toBe('#2f6db5');
+    expect(localStorage.getItem('fmr_accent_color')).toBe('cobalt');
   });
 
   it('applies the selected parked-car background asset on load', async () => {

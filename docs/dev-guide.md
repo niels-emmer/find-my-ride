@@ -122,6 +122,7 @@ Endpoints:
 - `settings` > `profile` includes:
   - change password
   - theme switcher (system/light/dark)
+  - accent color selector (preset button/select highlight palettes, applied live)
   - MFA setup/verify/disable
 - `settings` > `admin` is only visible to admin users and contains `edit users`.
 - `settings` > `admin` layout:

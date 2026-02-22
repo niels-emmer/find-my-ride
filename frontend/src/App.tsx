@@ -3,14 +3,26 @@ import QRCode from 'qrcode';
 
 import { api } from './api';
 import { ProtectedImage } from './ProtectedImage';
-import type { ParkingRecord, SystemStatus, ThemeMode, User } from './types';
+import type { AccentColor, ParkingRecord, SystemStatus, ThemeMode, User } from './types';
 
 const TOKEN_KEY = 'fmr_access_token';
 const THEME_KEY = 'fmr_theme_mode';
+const ACCENT_KEY = 'fmr_accent_color';
 const APP_BACKGROUND_IMAGE_URL = '/images/parking-background-option-3.jpg';
 const USERNAME_PATTERN = '[A-Za-z0-9](?:[A-Za-z0-9._-]{1,62}[A-Za-z0-9])?';
 const PASSWORD_POLICY_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,128}';
 const PASSWORD_POLICY_HINT = 'Use 8-128 chars including uppercase, lowercase, and a digit.';
+const DEFAULT_ACCENT_COLOR: AccentColor = 'evergreen';
+const ACCENT_OPTIONS: Array<{ id: AccentColor; label: string; primary: string; strong: string; swatch: string }> = [
+  { id: 'evergreen', label: 'Evergreen', primary: '#0e3f3b', strong: '#1a7269', swatch: '#0e3f3b' },
+  { id: 'cobalt', label: 'Cobalt', primary: '#1f4f8a', strong: '#2f6db5', swatch: '#1f4f8a' },
+  { id: 'cranberry', label: 'Cranberry', primary: '#7a2f43', strong: '#a3415b', swatch: '#7a2f43' },
+  { id: 'amber', label: 'Amber', primary: '#7c4f00', strong: '#a36700', swatch: '#7c4f00' },
+  { id: 'graphite', label: 'Graphite', primary: '#334455', strong: '#4b6178', swatch: '#334455' }
+];
+const ACCENT_BY_ID: Record<AccentColor, (typeof ACCENT_OPTIONS)[number]> = Object.fromEntries(
+  ACCENT_OPTIONS.map((entry) => [entry.id, entry])
+) as Record<AccentColor, (typeof ACCENT_OPTIONS)[number]>;
 
 type TabKey = 'find' | 'history' | 'settings';
 type AuthMode = 'login' | 'register';
@@ -22,6 +34,10 @@ function normalizeUsernameInput(value: string): string {
 
 function normalizeOtpInput(value: string): string {
   return value.replace(/\D/g, '').slice(0, 8);
+}
+
+function isAccentColor(value: string): value is AccentColor {
+  return value in ACCENT_BY_ID;
 }
 
 function formatDateTime(value: string): string {
@@ -183,6 +199,13 @@ function App(): JSX.Element {
     }
     return 'system';
   });
+  const [accentColor, setAccentColor] = useState<AccentColor>(() => {
+    const stored = localStorage.getItem(ACCENT_KEY);
+    if (stored && isAccentColor(stored)) {
+      return stored;
+    }
+    return DEFAULT_ACCENT_COLOR;
+  });
 
   const [message, setMessage] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
@@ -227,19 +250,23 @@ function App(): JSX.Element {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const applyTheme = () => {
+    const applyThemeAndAccent = () => {
       const resolved = themeMode === 'system' ? (media.matches ? 'dark' : 'light') : themeMode;
       document.documentElement.setAttribute('data-theme', resolved);
+      const accent = ACCENT_BY_ID[accentColor];
+      document.documentElement.style.setProperty('--ui-accent', accent.primary);
+      document.documentElement.style.setProperty('--ui-accent-strong', accent.strong);
       localStorage.setItem(THEME_KEY, themeMode);
+      localStorage.setItem(ACCENT_KEY, accentColor);
     };
 
-    applyTheme();
-    media.addEventListener('change', applyTheme);
+    applyThemeAndAccent();
+    media.addEventListener('change', applyThemeAndAccent);
 
     return () => {
-      media.removeEventListener('change', applyTheme);
+      media.removeEventListener('change', applyThemeAndAccent);
     };
-  }, [themeMode]);
+  }, [themeMode, accentColor]);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--app-background-image-url', `url('${APP_BACKGROUND_IMAGE_URL}')`);
@@ -526,6 +553,8 @@ function App(): JSX.Element {
                 user={currentUser}
                 themeMode={themeMode}
                 onThemeModeChange={setThemeMode}
+                accentColor={accentColor}
+                onAccentColorChange={setAccentColor}
                 onRefreshUser={async () => {
                   const me = await api.me(token);
                   setCurrentUser(me);
@@ -1402,6 +1431,8 @@ function ProfileCard({
   user,
   themeMode,
   onThemeModeChange,
+  accentColor,
+  onAccentColorChange,
   onRefreshUser,
   onError
 }: {
@@ -1409,6 +1440,8 @@ function ProfileCard({
   user: User;
   themeMode: ThemeMode;
   onThemeModeChange: (theme: ThemeMode) => void;
+  accentColor: AccentColor;
+  onAccentColorChange: (accentColor: AccentColor) => void;
   onRefreshUser: () => Promise<void>;
   onError: (message: string) => void;
 }): JSX.Element {
@@ -1495,6 +1528,26 @@ function ProfileCard({
           <option value="dark">Dark</option>
         </select>
       </label>
+
+      <div className="field">
+        <span>Accent color</span>
+        <div className="accent-options" role="radiogroup" aria-label="Accent color">
+          {ACCENT_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              className={`accent-option${accentColor === option.id ? ' active' : ''}`}
+              type="button"
+              role="radio"
+              aria-checked={accentColor === option.id}
+              aria-label={option.label}
+              onClick={() => onAccentColorChange(option.id)}
+            >
+              <span className="accent-swatch" style={{ backgroundColor: option.swatch }} aria-hidden="true" />
+              <span>{option.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <h3 className="section-heading">MFA</h3>
       <MfaCard token={token} user={user} onRefreshUser={onRefreshUser} onError={onError} />

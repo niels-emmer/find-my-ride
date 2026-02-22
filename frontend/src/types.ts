@@ -1,4 +1,5 @@
 export type ThemeMode = 'system' | 'light' | 'dark';
+export type AccentColor = 'evergreen' | 'cobalt' | 'cranberry' | 'amber' | 'graphite';
 
 export interface User {
   id: string;

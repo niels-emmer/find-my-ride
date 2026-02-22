@@ -69,6 +69,7 @@ Single-page React app with feature sections:
 - Date/time rendering in cards is day-first (`dd-mm-yyyy`) with browser-local time
 - History cards provide quick delete action from collapsed state
 - Profile controls: change password, MFA setup/verify/disable, theme mode switch
+- Profile controls: change password, MFA setup/verify/disable, theme mode switch, and accent color preset selection (stored client-side)
 - Admin user management and history scope filtering (`Admin` > `Add users` + `Edit users` list with edit/delete actions and role/password modal)
 
 PWA support:

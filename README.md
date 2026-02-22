@@ -39,7 +39,7 @@ Docs are available in `docs/INDEX.md` (source) and `site/INDEX/index.html` (gene
 - Two-phase MFA sign-in: username/password first, OTP prompt only when required
 - Optional MFA (TOTP) per user
 - Session auth with rotating refresh tokens (HttpOnly cookie) + automatic access-token refresh/retry
-- Light/dark/system theme support
+- Light/dark/system theme support with user-selectable accent color presets
 
 ## Screenshots
 

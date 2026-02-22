@@ -4,6 +4,8 @@
   --font-ui: 'Space Grotesk', 'Avenir Next', 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
   --app-background-image-url: url('/images/parking-background-option-3.jpg');
+  --ui-accent: #0e3f3b;
+  --ui-accent-strong: #1a7269;
 }
 
 :root[data-theme='light'] {
@@ -117,7 +119,7 @@ code {
 }
 
 .auth-mode-btn.active {
-  background: var(--primary);
+  background: var(--ui-accent);
   color: #fff;
 }
 
@@ -263,6 +265,36 @@ code {
   max-width: 18rem;
 }
 
+.accent-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.accent-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem 0.55rem;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.accent-option.active {
+  border-color: var(--ui-accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ui-accent) 55%, transparent);
+}
+
+.accent-swatch {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #fff 55%, transparent);
+}
+
 input,
 textarea,
 select {
@@ -272,6 +304,15 @@ select {
   border: 1px solid var(--border);
   border-radius: 0.65rem;
   padding: 0.62rem 0.68rem;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--ui-accent) 35%, transparent);
+  outline-offset: 1px;
+  border-color: var(--ui-accent);
 }
 
 textarea {
@@ -285,7 +326,7 @@ button,
 
 .btn {
   border: 1px solid transparent;
-  background: var(--primary);
+  background: var(--ui-accent);
   color: #fff;
   padding: 0.55rem 0.9rem;
   border-radius: 0.65rem;
@@ -299,6 +340,10 @@ button,
 
 .btn:hover {
   transform: translateY(-1px);
+}
+
+.btn:not(.secondary):not(.danger):hover {
+  background: var(--ui-accent-strong);
 }
 
 .btn:disabled {
@@ -578,7 +623,7 @@ button,
 }
 
 .user-menu[open] .user-menu-trigger {
-  border-color: var(--primary);
+  border-color: var(--ui-accent);
 }
 
 .user-menu-panel {
@@ -634,7 +679,7 @@ button,
 }
 
 .tab-button.active {
-  background: var(--primary);
+  background: var(--ui-accent);
   color: #fff;
 }
 
@@ -707,7 +752,7 @@ button,
 }
 
 .toast-dismiss:hover {
-  border-color: var(--text-muted);
+  border-color: var(--muted);
 }
 
 .auth-card {

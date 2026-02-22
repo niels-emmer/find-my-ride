@@ -169,3 +169,14 @@
   - Deployment sets `APP_VERSION` (typically equal to git release tag) and forwards it to frontend build as `VITE_APP_VERSION`.
   - Service worker cache key prefix includes release version.
   - Navigation fetch strategy uses network-first with offline fallback to cached `index.html` for better update propagation while preserving offline behavior.
+
+## ADR-023: Client-side accent color presets for UI controls
+
+- Date: 2026-02-22
+- Status: accepted
+- Decision: Add user-selectable accent presets in profile settings and apply them live to primary buttons and active selector controls.
+- Why: Improves personalization and quick visual contrast tuning on mobile/desktop without introducing backend profile storage complexity.
+- Details:
+  - Accent selection is stored in browser local storage (`fmr_accent_color`).
+  - Accent applies to primary CTA buttons and active navigation/auth selectors.
+  - Presets are curated for white foreground label readability over the existing app background treatment.
