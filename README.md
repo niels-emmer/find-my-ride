@@ -4,8 +4,8 @@
 
 Use it in a parking garage, city lot, or unfamiliar area: start a parking session, save location/note/photos, and later open history to get back to your car quickly.
 
-Documentation entrypoint: `docs/INDEX.md`  
-Generated docs site (local build output): `site/INDEX/index.html`
+Documentation entrypoint: `docs/index.md`  
+Generated docs site (local build output): `site/index.html`
 
 ## Screenshots (Mobile)
 
@@ -150,7 +150,7 @@ Phone testing on local network:
 
 If you want to extend or fork this project, start here:
 
-- `docs/INDEX.md` — project memory entrypoint
+- `docs/index.md` — project memory entrypoint
 - `docs/architecture.md` — runtime and component architecture
 - `docs/dev-guide.md` — local workflow and operations
 - `docs/api-reference.md` — endpoint reference

@@ -3,7 +3,7 @@ site_description: Documentation and project memory for find-my-ride
 site_url: https://niels-emmer.github.io/find-my-ride/
 
 nav:
-  - Home: INDEX.md
+  - Home: index.md
   - Architecture: architecture.md
   - Decisions: decisions.md
   - Dev Guide: dev-guide.md

@@ -21,7 +21,7 @@ Agents working here must keep the documentation memory system current with the c
 
 When making meaningful code changes, update as needed:
 
-1. `docs/INDEX.md` (high-level status and pointers)
+1. `docs/index.md` (high-level status and pointers)
 2. `docs/architecture.md` (system structure)
 3. `docs/decisions.md` (new ADR-style decisions)
 4. `docs/dev-guide.md` (dev and deployment workflow)
