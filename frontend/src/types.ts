@@ -31,8 +31,9 @@ export interface Photo {
 export interface ParkingRecord {
   id: string;
   owner_id: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
+  location_label: string | null;
   note: string | null;
   parked_at: string;
   created_at: string;

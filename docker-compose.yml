@@ -25,12 +25,16 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       SECRET_KEY: ${SECRET_KEY}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-30}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       UPLOAD_DIR: ${UPLOAD_DIR:-/data/uploads}
       MAX_PHOTOS_PER_RECORD: ${MAX_PHOTOS_PER_RECORD:-3}
       MAX_PHOTO_SIZE_MB: ${MAX_PHOTO_SIZE_MB:-8}
-      ALLOW_SELF_REGISTER: ${ALLOW_SELF_REGISTER:-false}
       MFA_ISSUER: ${MFA_ISSUER:-find-my-ride}
+      REFRESH_TOKEN_COOKIE_NAME: ${REFRESH_TOKEN_COOKIE_NAME:-fmr_refresh_token}
+      REFRESH_TOKEN_COOKIE_SECURE: ${REFRESH_TOKEN_COOKIE_SECURE:-false}
+      REFRESH_TOKEN_COOKIE_SAMESITE: ${REFRESH_TOKEN_COOKIE_SAMESITE:-lax}
+      REFRESH_TOKEN_COOKIE_PATH: ${REFRESH_TOKEN_COOKIE_PATH:-/api/auth}
     volumes:
       - ./backend:/app
       - ./data/uploads:/data/uploads
@@ -47,7 +51,8 @@ services:
       dockerfile: Dockerfile.dev
     container_name: find-my-ride-frontend
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
+      VITE_API_URL: ${VITE_API_URL:-/api}
+      VITE_PROXY_TARGET: ${VITE_PROXY_TARGET:-http://backend:8000}
     volumes:
       - ./frontend:/app
       - /app/node_modules

@@ -17,6 +17,7 @@ Development (`docker-compose.yml`):
 - `frontend` on `:5173`
 - `backend` on `:8000`
 - `db` on `:5432`
+- Frontend API path uses same-origin `/api` and Vite dev proxy forwards to backend (`VITE_PROXY_TARGET`)
 
 Production-style (`docker-compose.prod.yml`):
 
@@ -29,51 +30,76 @@ Production-style (`docker-compose.prod.yml`):
 Main modules:
 
 - `app/core/`: config, database session, security utilities, dependencies
-- `app/models/`: SQLAlchemy models (`User`, `ParkingRecord`, `Photo`)
+- `app/models/`: SQLAlchemy models (`User`, `ParkingRecord`, `Photo`, `RefreshToken`)
 - `app/schemas/`: Pydantic request/response models
 - `app/api/routes/`: route handlers for `system`, `auth`, `users`, `parking`
-- `app/services/`: MFA and file storage helpers
+- `app/services/`: geocoding, MFA, refresh-token lifecycle, and file storage helpers
 
 Data model:
 
 - `users`: account identity, password hash, admin flag, MFA status/secret
-- `parking_records`: owner, lat/lng, note, parked time, timestamps
+- `parking_records`: owner, optional lat/lng pair, persisted location label text (street-first normalized), note, parked time, timestamps
 - `photos`: per-record metadata and storage path
+- `refresh_tokens`: hashed refresh token values, owner, expiry, and revocation timestamp
 
 ## Frontend architecture
 
 Single-page React app with feature sections:
 
-- Bootstrap admin / login / optional self-register
-- Park-now action with geolocation + optional note + up to 3 photos
-- Park-now includes manual lat/lng fallback fields for poor GPS environments
-- Latest record quick actions (Google Maps walking route + OpenStreetMap)
-- History listing with editing and media management
-- MFA setup/verify/disable
-- Admin user creation and scope filtering
-- Theme mode switch: light/dark/system
+- Bootstrap admin / login / open self-register (no moderation)
+- Login flow is two-phase for MFA users: username/password first, then OTP in a modal when challenged
+- MFA setup shows a locally generated QR code above the TOTP secret, using the backend `otpauth_url`
+- Bottom-tab navigation:
+  - `home`: store new location + last parked
+  - `history`: record history + details + delete
+  - `settings`: profile + admin (admin-only)
+- Top app bar with account menu for signed-in identity and sign-out
+- Logged-out auth layout mirrors the top app bar style and places auth mode buttons (`Sign in`/`Register`) directly below it
+- Auth form panel is anchored toward the lower half of the viewport with reserved bottom spacing for a future banner slot
+- Subtle parked-car background image (locally bundled from selected royalty-free source) with theme-aware overlays to preserve readability
+- Park-now action with `Locate` (geolocation) + reverse place lookup + optional note + up to 3 photos
+- Park-now photo intake uses 3 camera-first capture slots with thumbnail preview/replace controls
+- Camera file selection is additionally synchronized on `focus`/`visibilitychange` to handle mobile camera-app round trips
+- Park-now location state is explicit (`ready` with place/coords or `No reception`)
+- On non-secure contexts (common on HTTP LAN URLs), location state surfaces an HTTPS requirement hint for mobile browsers
+- Park-now save accepts either a valid location pair or note/photo evidence, allowing garage use when GPS is unavailable
+- Park-now requires a resolved physical `location_label` when coordinates are saved (coordinate-style labels are rejected)
+- Last parked and history share expandable cards (`More info`/`Close`) with OpenStreetMap embed preview, saved location text, a `More details` note section, photo thumbnails, and route/actions sections
+- Date/time rendering in cards is day-first (`dd-mm-yyyy`) with browser-local time
+- History cards provide quick delete action from collapsed state
+- Profile controls: change password, MFA setup/verify/disable, theme mode switch
+- Admin user management and history scope filtering (`Admin` > `Add users` + `Edit users` list with edit/delete actions and role/password modal)
 
 PWA support:
 
-- Web manifest via `vite-plugin-pwa`
-- Service worker auto-update registration in `src/main.tsx`
+- Static web manifest at `frontend/public/manifest.webmanifest`
+- Local service worker at `frontend/public/sw.js`, registered in `src/main.tsx`
+- Service worker explicitly avoids caching `/api/*` responses to prevent sensitive auth/data caching
 
 ## Security model
 
 - Passwords hashed with bcrypt (`passlib`)
-- JWT bearer access tokens with expiry
+- Username validation and normalization at API boundary (lowercased, restricted character set)
+- Password policy enforced at API boundary for create/reset/change operations: 8-128 chars with uppercase/lowercase/digit
+- Note/location text sanitization rejects control characters and normalizes whitespace
+- Short-lived JWT bearer access tokens with expiry
+- Refresh tokens are random 64-byte URL-safe secrets, stored hashed (`sha256`) in DB
+- Refresh token cookie is HttpOnly and scoped to `/api/auth`; backend rotates refresh token on every refresh
+- Refresh token replay/expired/revoked checks revoke active refresh sessions for that user before rejecting
+- Refresh tokens are revoked on logout, self password change, and admin password reset
+- Frontend retries once on `401` by refreshing and replaying the original API request
 - Route-level auth dependency (`get_current_user`) + admin guard (`get_admin_user`)
 - Owner-based row access checks for parking records/photos
 - Upload constraints:
   - Max photos per record (`MAX_PHOTOS_PER_RECORD`, default 3)
-  - Allowed MIME types: jpeg/png/webp/heic/heif
+  - Allowed MIME types: jpeg/jpg/pjpeg/png/webp/heic/heic-sequence/heif/heif-sequence/avif
   - Max photo size (`MAX_PHOTO_SIZE_MB`, default 8 MB)
 - Basic security headers middleware enabled in backend
-- CORS allowlist controlled by `CORS_ORIGINS`
+- CORS allowlist controlled by `CORS_ORIGINS` with credentials enabled for cookie-based refresh flow
 
 ## Limitations in current baseline
 
-- JWT tokens are stored in browser localStorage by current frontend implementation.
+- Access tokens are still persisted in browser `localStorage` between reloads (refresh token stays HttpOnly cookie).
 - MFA secret is stored in DB without envelope encryption.
 - DB schema migrations are currently startup `create_all` (no Alembic migration history yet).
 

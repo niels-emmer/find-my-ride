@@ -9,10 +9,15 @@ from app.core.config import settings
 
 ALLOWED_IMAGE_CONTENT_TYPES: dict[str, str] = {
     "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/pjpeg": ".jpg",
     "image/png": ".png",
     "image/webp": ".webp",
     "image/heic": ".heic",
+    "image/heic-sequence": ".heic",
     "image/heif": ".heif",
+    "image/heif-sequence": ".heif",
+    "image/avif": ".avif",
 }
 
 

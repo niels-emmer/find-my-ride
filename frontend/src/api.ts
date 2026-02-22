@@ -2,6 +2,23 @@ import type { ParkingRecord, SystemStatus, TokenResponse, User } from './types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
+type RequestMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
+type RequestOptions = {
+  method?: RequestMethod;
+  token?: string;
+  body?: unknown;
+};
+type AuthSessionHandlers = {
+  getAccessToken: () => string;
+  setAccessToken: (token: string) => void;
+  clearAccessToken: () => void;
+};
+
+const NO_REFRESH_PATHS = new Set(['/auth/bootstrap', '/auth/register', '/auth/login', '/auth/refresh', '/auth/logout']);
+
+let authSessionHandlers: AuthSessionHandlers | null = null;
+let refreshInFlight: Promise<string> | null = null;
+
 function isFormData(payload: unknown): payload is FormData {
   return typeof FormData !== 'undefined' && payload instanceof FormData;
 }
@@ -22,47 +39,71 @@ export function toAbsoluteApiPath(path: string): string {
   return `${API_BASE}${path.startsWith('/') ? '' : '/'}${path}`;
 }
 
-async function request<T>(
-  path: string,
-  options: {
-    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-    token?: string;
-    body?: unknown;
-  } = {}
-): Promise<T> {
+function buildHeaders(token: string | undefined): Record<string, string> {
   const headers: Record<string, string> = {};
-
-  if (options.token) {
-    headers.Authorization = `Bearer ${options.token}`;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
+  return headers;
+}
 
+function buildBody(options: RequestOptions): BodyInit | undefined {
   let body: BodyInit | undefined;
   if (options.body !== undefined) {
     if (isFormData(options.body)) {
       body = options.body;
     } else {
-      headers['Content-Type'] = 'application/json';
       body = JSON.stringify(options.body);
     }
+  }
+  return body;
+}
+
+async function buildError(response: Response): Promise<Error> {
+  let detail = `Request failed (${response.status})`;
+  try {
+    const payload = (await response.json()) as { detail?: string };
+    if (payload.detail) {
+      detail = payload.detail;
+    }
+  } catch {
+    // ignore parse failures
+  }
+  return new Error(detail);
+}
+
+function canAttemptRefresh(path: string, token: string | undefined): boolean {
+  return Boolean(token) && !NO_REFRESH_PATHS.has(path);
+}
+
+async function request<T>(path: string, options: RequestOptions = {}, allowRefresh = true): Promise<T> {
+  const token = options.token ?? authSessionHandlers?.getAccessToken();
+  const headers = buildHeaders(token);
+  const body = buildBody(options);
+
+  if (options.body !== undefined && !isFormData(options.body)) {
+    headers['Content-Type'] = 'application/json';
   }
 
   const response = await fetch(`${API_BASE}${path}`, {
     method: options.method ?? 'GET',
+    credentials: 'include',
     headers,
     body
   });
 
-  if (!response.ok) {
-    let detail = `Request failed (${response.status})`;
+  if (response.status === 401 && allowRefresh && canAttemptRefresh(path, token)) {
     try {
-      const payload = (await response.json()) as { detail?: string };
-      if (payload.detail) {
-        detail = payload.detail;
-      }
+      const refreshedToken = await refreshAccessToken();
+      return request<T>(path, { ...options, token: refreshedToken }, false);
     } catch {
-      // ignore parse failures
+      authSessionHandlers?.clearAccessToken();
+      throw await buildError(response);
     }
-    throw new Error(detail);
+  }
+
+  if (!response.ok) {
+    throw await buildError(response);
   }
 
   if (response.status === 204) {
@@ -73,6 +114,9 @@ async function request<T>(
 }
 
 export const api = {
+  configureAuthSession(handlers: AuthSessionHandlers | null): void {
+    authSessionHandlers = handlers;
+  },
   systemStatus(): Promise<SystemStatus> {
     return request<SystemStatus>('/system/status');
   },
@@ -94,8 +138,24 @@ export const api = {
       body: { username, password, otp_code: otpCode || null }
     });
   },
+  refresh(): Promise<TokenResponse> {
+    return request<TokenResponse>('/auth/refresh', { method: 'POST' });
+  },
+  logout(): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/logout', { method: 'POST' });
+  },
   me(token: string): Promise<User> {
     return request<User>('/auth/me', { token });
+  },
+  changePassword(token: string, currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      token,
+      body: {
+        current_password: currentPassword,
+        new_password: newPassword
+      }
+    });
   },
   setupMfa(token: string): Promise<{ secret: string; otpauth_url: string }> {
     return request<{ secret: string; otpauth_url: string }>('/auth/mfa/setup', {
@@ -131,7 +191,7 @@ export const api = {
   updateRecord(
     token: string,
     recordId: string,
-    payload: Partial<Pick<ParkingRecord, 'latitude' | 'longitude' | 'note' | 'parked_at'>>
+    payload: Partial<Pick<ParkingRecord, 'latitude' | 'longitude' | 'location_label' | 'note' | 'parked_at'>>
   ): Promise<ParkingRecord> {
     return request<ParkingRecord>(`/parking/records/${recordId}`, {
       method: 'PATCH',
@@ -163,5 +223,36 @@ export const api = {
       token,
       body: { username, password, is_admin: isAdmin }
     });
+  },
+  updateUser(token: string, userId: string, payload: { password?: string; is_admin?: boolean }): Promise<User> {
+    return request<User>(`/users/${userId}`, {
+      method: 'PATCH',
+      token,
+      body: payload
+    });
+  },
+  deleteUser(token: string, userId: string): Promise<void> {
+    return request<void>(`/users/${userId}`, {
+      method: 'DELETE',
+      token
+    });
   }
 };
+
+async function refreshAccessToken(): Promise<string> {
+  if (refreshInFlight) {
+    return refreshInFlight;
+  }
+
+  refreshInFlight = (async () => {
+    const refreshed = await request<TokenResponse>('/auth/refresh', { method: 'POST' }, false);
+    authSessionHandlers?.setAccessToken(refreshed.access_token);
+    return refreshed.access_token;
+  })();
+
+  try {
+    return await refreshInFlight;
+  } finally {
+    refreshInFlight = null;
+  }
+}

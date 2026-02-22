@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -10,7 +12,8 @@ class Settings(BaseSettings):
     environment: str = "development"
 
     secret_key: str = Field(..., min_length=32)
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 30
 
     database_url: str = "postgresql+psycopg://find_my_ride:find_my_ride@db:5432/find_my_ride"
 
@@ -20,14 +23,22 @@ class Settings(BaseSettings):
     max_photos_per_record: int = 3
     max_photo_size_mb: int = 8
 
-    allow_self_register: bool = False
     mfa_issuer: str = "find-my-ride"
+    refresh_token_cookie_name: str = "fmr_refresh_token"
+    refresh_token_cookie_secure: bool = False
+    refresh_token_cookie_samesite: Literal["lax", "strict", "none"] = "lax"
+    refresh_token_cookie_path: str = "/api/auth"
+
+    geocode_reverse_url: str = "https://nominatim.openstreetmap.org/reverse"
+    geocode_user_agent: str = "find-my-ride/0.1"
+    geocode_timeout_seconds: float = 8.0
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
+        enable_decoding=False,
     )
 
     @field_validator("cors_origins", mode="before")

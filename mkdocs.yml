@@ -8,6 +8,7 @@ nav:
   - Decisions: decisions.md
   - Dev Guide: dev-guide.md
   - API Reference: api-reference.md
+  - Security: security.md
 
 theme:
   name: material

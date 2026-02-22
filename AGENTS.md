@@ -9,6 +9,8 @@ Agents working here must keep the documentation memory system current with the c
 
 - Code is truth.
 - If code and docs diverge, update docs immediately.
+- No task is complete without validation of changed behavior.
+- Every new or changed piece of functionality must include automated test coverage.
 - Keep architecture/security decisions documented in `docs/decisions.md`.
 - Keep API behavior documented in `docs/api-reference.md` when endpoints change.
 - Keep onboarding/developer workflow up to date in `docs/dev-guide.md`.
@@ -29,3 +31,4 @@ When making meaningful code changes, update as needed:
 - Keep user data partitioned by owner unless admin access is explicitly required.
 - Limit upload surface area (count, content type, size).
 - Maintain mobile-first usability and PWA behavior.
+- Run validation commands before finalizing work and report any gaps explicitly when a command cannot run.

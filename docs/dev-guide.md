@@ -19,6 +19,11 @@ cp .env.example .env
 - `POSTGRES_PASSWORD`
 - `SECRET_KEY` (64+ random chars)
 - `CORS_ORIGINS`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `REFRESH_TOKEN_EXPIRE_DAYS`
+- `REFRESH_TOKEN_COOKIE_SECURE` (`true` in production behind HTTPS)
+- `VITE_API_URL` (keep as `/api` in Docker dev)
+- `VITE_PROXY_TARGET` (default: `http://backend:8000`)
 
 ## Run locally (Docker)
 
@@ -41,8 +46,14 @@ Endpoints:
 ## Development loop
 
 - Backend uses `uvicorn --reload` in compose dev service.
-- Frontend uses Vite dev server with hot reload.
+- Frontend uses Vite dev server with hot reload and `/api` proxy to backend.
 - DB and upload storage are persisted in docker volumes / local folders.
+
+## Phone/LAN testing
+
+- Access the app from another device with `http://<host-lan-ip>:<FRONTEND_PORT>`.
+- Keep `VITE_API_URL=/api` for this flow. If set to `http://localhost:...`, phones/tablets will try to call their own localhost and stall on status loading.
+- Geolocation caveat: most mobile browsers require HTTPS for GPS access. Over plain HTTP LAN URLs, `Locate` can fail immediately and show `No reception`.
 
 ## Bootstrap flow
 
@@ -50,21 +61,77 @@ Endpoints:
 2. Create first user in "Create first admin" screen.
 3. That user is stored as admin and signed in immediately.
 
+## Login and registration flow
+
+- If users already exist, the logged-out screen shows the same top app bar styling as the signed-in app (without user menu actions).
+- An auth mode bar appears directly below the top bar with `Sign in` and `Register`.
+- `Register` is open by default (no moderation gate) and creates a normal non-admin account.
+- `Sign in` first submits username/password only; if MFA is enabled for that account, an OTP modal appears as a second step.
+- The auth card is positioned in the lower half of the viewport with intentional extra bottom space reserved for a future banner.
+- Username input is normalized to lowercase and validated for `a-z`, `0-9`, `.`, `_`, `-` (3-64 chars).
+- Password policy for create/reset/change: 8-128 chars with at least one uppercase, lowercase, and digit.
+
+## Session and refresh-token flow
+
+- Auth endpoints (`bootstrap`, `register`, `login`) return access token JSON and set an HttpOnly refresh cookie.
+- Frontend stores access token for API bearer auth and includes cookies (`credentials: include`) for refresh calls.
+- On cold start without access token, frontend attempts `/api/auth/refresh` to restore session.
+- On API `401` responses with a bearer token, frontend attempts one refresh and retries the original request once.
+- Backend rotates refresh token on every successful refresh and stores only a hashed token in DB.
+- Logout revokes only the current refresh token and clears cookie.
+- Password changes (self-service or admin reset) revoke all refresh tokens for that user.
+
 ## Parking capture flow
 
-- Primary path uses browser geolocation in one tap.
-- If GPS is unavailable (for example deep indoor garages), the UI accepts manual latitude/longitude fallback before submit.
+- `Locate` button requests geolocation and attempts reverse-lookup location naming.
+- On success, the UI shows place name and coordinates.
+- On successful save with coordinates, the current place label is persisted as `location_label` for later history/latest display.
+- Coordinate-style location labels are rejected by the API; coordinates must be paired with a physical address label.
+- Stored labels are normalized in street-first order (`Street 12, ZIP City, Province, Country`).
+- On failure, the UI shows `No reception`; save is still allowed when note and/or photos are provided.
+- Photos are handled via 3 capture slots; each slot is an empty action button or an image thumbnail that can be replaced/removed.
+- Samsung Internet PWA note: camera capture uses picker fallback (no forced `capture` attribute) to avoid returning without a file.
 
 ## Multi-user behavior
 
-- Admin can create new users in the UI (Admin users panel).
-- Non-admin users only see/edit their own parking records.
+- Admin can create new users in the UI (`settings` > `admin` > `add users`).
+- Admin can manage existing users in `settings` > `admin` > `edit users`:
+  - `Edit` opens a modal to reset password and/or change admin role
+  - `Delete` removes the selected user
+  - self account is visible but does not expose edit/delete actions
+- Non-admin users only see/delete their own parking records.
 - Admin can filter history scope by user or all users.
+
+## UI navigation
+
+- The authenticated app uses 3 fixed bottom tabs:
+  - `home`: new location capture + last parked
+  - `history`: record history with expandable details and delete
+  - `settings`: profile and admin
+- Top app bar:
+  - app brand on the left
+  - account icon menu on the right with signed-in user and sign-out action
+- Background image asset:
+  - file: `frontend/public/images/parking-background-option-3.jpg`
+  - source: `https://www.pexels.com/photo/a-modern-car-in-an-underground-garage-16304132/`
+  - license: `https://www.pexels.com/license/`
+- `home` and `history` record cards:
+  - collapsed view shows time/date, saved location text, and quick actions
+  - `More info` expands details with OpenStreetMap embed preview, a `More details` note section, thumbnails, and a `Take me there` section
+  - `Delete` removes the record
+- `settings` > `profile` includes:
+  - change password
+  - theme switcher (system/light/dark)
+  - MFA setup/verify/disable
+- `settings` > `admin` is only visible to admin users and contains `edit users`.
+- `settings` > `admin` layout:
+  - `Add users` section for username/password/admin toggle creation
+  - `Edit users` section for list + edit/delete actions (non-self users only)
 
 ## MFA behavior
 
 - Any signed-in user can start MFA setup.
-- App returns TOTP secret + provisioning URI.
+- App returns TOTP secret + provisioning URI, and the UI renders a QR code from that URI for app scan.
 - User verifies one OTP code to enable MFA.
 - If enabled, login requires `otp_code`.
 
@@ -75,6 +142,58 @@ When changing code:
 1. Update relevant pages in `docs/`.
 2. Keep `docs/api-reference.md` in sync with route changes.
 3. Keep architecture and decision pages current.
+
+## One-time backfill for old address labels
+
+If older records have missing/coordinate-style `location_label` values, run:
+
+```bash
+docker compose run --rm --no-deps backend python -m app.scripts.backfill_location_labels
+```
+
+This keeps coordinates intact and writes resolved physical addresses where lookup succeeds.
+
+## Validation and tests policy
+
+- Any code change must be validated before completing work.
+- Every functional change must include or update automated tests.
+- If a test command cannot be executed in the current environment, report that gap explicitly.
+
+Run backend tests:
+
+```bash
+make test
+```
+
+`make test` runs the suite in Docker (`backend` service image) to avoid host dependency drift.
+If you already installed backend Python dependencies locally, you can run:
+
+```bash
+make test-local
+```
+
+Run frontend tests:
+
+```bash
+make test-frontend
+```
+
+Run both:
+
+```bash
+make test-all
+```
+
+Run dependency security scans:
+
+```bash
+make security-scan
+```
+
+`make security-scan` runs:
+- `npm audit` for frontend dependencies
+- `pip-audit` for backend dependencies (inside backend container)
+- `pip-audit` for docs dependencies (ephemeral Python container)
 
 ## Serve docs locally
 
