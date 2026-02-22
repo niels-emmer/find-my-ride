@@ -88,6 +88,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#production-deployment-notes">Production deployment notes</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#related-docs">Related docs</a>
+    </li>
     </ul>
                 </li>
               </ul>
@@ -199,6 +201,7 @@
 <li>Backend rotates refresh token on every successful refresh and stores only a hashed token in DB.</li>
 <li>Logout revokes only the current refresh token and clears cookie.</li>
 <li>Password changes (self-service or admin reset) revoke all refresh tokens for that user.</li>
+<li>Manual logout in the UI disables same-session auto-refresh recovery to avoid mobile race conditions where slow logout responses could re-authenticate immediately.</li>
 </ul>
 <h2 id="parking-capture-flow">Parking capture flow<a class="headerlink" href="#parking-capture-flow" title="Permanent link">&para;</a></h2>
 <ul>
@@ -231,6 +234,7 @@
 <li>Top app bar:</li>
 <li>app brand on the left</li>
 <li>account icon menu on the right with signed-in user and sign-out action</li>
+<li>Home-tab mobile layout includes horizontal overflow guards to prevent off-screen content and shifted bottom navigation.</li>
 <li>Background image asset:</li>
 <li>file: <code>frontend/public/images/parking-background-option-3.jpg</code></li>
 <li>source: <code>https://www.pexels.com/photo/a-modern-car-in-an-underground-garage-16304132/</code></li>
@@ -316,6 +320,14 @@ mkdocs serve
 <li>Place frontend/backend behind an SSL reverse proxy (proxy config not included here).</li>
 <li>Restrict CORS to real public domain(s).</li>
 <li>Use strong credentials and persisted volumes for db/uploads.</li>
+</ul>
+<h2 id="related-docs">Related docs<a class="headerlink" href="#related-docs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">Docs index</a></li>
+<li><a href="../architecture/">Architecture</a></li>
+<li><a href="../decisions/">Decisions</a></li>
+<li><a href="../api-reference/">API Reference</a></li>
+<li><a href="../security/">Security</a></li>
 </ul>
               
             </div>

@@ -100,6 +100,12 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#adr-025-sticky-active-parking-session-on-home">ADR-025: Sticky active parking session on home</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-026-manual-logout-must-suppress-same-session-silent-refresh">ADR-026: Manual logout must suppress same-session silent refresh</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#adr-027-mobile-home-layout-overflow-guard">ADR-027: Mobile home layout overflow guard</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#related-docs">Related docs</a>
+    </li>
     </ul>
                 </li>
               </ul>
@@ -343,6 +349,36 @@
 <li><code>End parking</code> requires yes/no confirmation and writes the record to history only after confirmation.</li>
 <li>Active session is persisted per user in browser local storage to survive app close/reopen.</li>
 <li>While active and permission granted, browser notifications can display parked duration updates.</li>
+</ul>
+<h2 id="adr-026-manual-logout-must-suppress-same-session-silent-refresh">ADR-026: Manual logout must suppress same-session silent refresh<a class="headerlink" href="#adr-026-manual-logout-must-suppress-same-session-silent-refresh" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: When logout is user-initiated, set a client-side manual-logout guard that blocks the no-token startup refresh path in the same app session.</li>
+<li>Why: Prevents mobile timing races where <code>/auth/logout</code> completion can lag and a background refresh could immediately re-authenticate the user after they sign out.</li>
+<li>Details:</li>
+<li>Guard is enabled in logout handler before token state is cleared.</li>
+<li>Guard is reset on explicit authentication success (login/register/bootstrap).</li>
+<li>API-level token revocation behavior remains unchanged (refresh token revoked server-side).</li>
+</ul>
+<h2 id="adr-027-mobile-home-layout-overflow-guard">ADR-027: Mobile home layout overflow guard<a class="headerlink" href="#adr-027-mobile-home-layout-overflow-guard" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Date: 2026-02-22</li>
+<li>Status: accepted</li>
+<li>Decision: Add horizontal overflow constraints and min-width guards on key home-tab layout containers and long-text blocks.</li>
+<li>Why: Fixes mobile-specific rightward overflow that caused off-screen background exposure and apparent bottom-tab shift on the home tab.</li>
+<li>Details:</li>
+<li>Apply root horizontal clipping.</li>
+<li>Add <code>min-width: 0</code> to grid/flex containers that host wide content.</li>
+<li>Allow long labels/metadata to wrap safely in narrow viewports.</li>
+</ul>
+<h2 id="related-docs">Related docs<a class="headerlink" href="#related-docs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">Docs index</a></li>
+<li><a href="../architecture/">Architecture</a></li>
+<li><a href="../dev-guide/">Dev Guide</a></li>
+<li><a href="../api-reference/">API Reference</a></li>
+<li><a href="../security/">Security</a></li>
 </ul>
               
             </div>

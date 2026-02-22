@@ -58,6 +58,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#limitations-in-current-baseline">Limitations in current baseline</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#related-docs">Related docs</a>
+    </li>
     </ul>
                 </li>
               </ul>
@@ -170,6 +172,7 @@
 <li>History cards use expandable (<code>More info</code>/<code>Close</code>) details with OpenStreetMap embed preview, saved location text, a <code>More details</code> note section, photo thumbnails, and route/actions sections</li>
 <li>Date/time rendering in cards is day-first (<code>dd-mm-yyyy</code>) with browser-local time</li>
 <li>History cards provide quick delete action from collapsed state</li>
+<li>Mobile home layout applies horizontal overflow guards to prevent off-screen content and bottom-tab drift</li>
 <li>Profile controls: change password, MFA setup/verify/disable, theme mode switch, and accent color preset selection (theme-aware tones, stored client-side)</li>
 <li>Admin user management and history scope filtering (<code>Admin</code> &gt; <code>Add users</code> + <code>Edit users</code> list with edit/delete actions and role/password modal)</li>
 </ul>
@@ -192,6 +195,7 @@
 <li>Refresh token cookie is HttpOnly and scoped to <code>/api/auth</code>; backend rotates refresh token on every refresh</li>
 <li>Refresh token replay/expired/revoked checks revoke active refresh sessions for that user before rejecting</li>
 <li>Refresh tokens are revoked on logout, self password change, and admin password reset</li>
+<li>Manual logout sets a client guard that suppresses same-session silent refresh recovery, avoiding mobile race conditions after sign-out</li>
 <li>Frontend retries once on <code>401</code> by refreshing and replaying the original API request</li>
 <li>Route-level auth dependency (<code>get_current_user</code>) + admin guard (<code>get_admin_user</code>)</li>
 <li>Owner-based row access checks for parking records/photos</li>
@@ -209,6 +213,14 @@
 <li>DB schema migrations are currently startup <code>create_all</code> (no Alembic migration history yet).</li>
 </ul>
 <p>These are acceptable for initial scaffold but should be hardened before full production rollout.</p>
+<h2 id="related-docs">Related docs<a class="headerlink" href="#related-docs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../">Docs index</a></li>
+<li><a href="../decisions/">Decisions</a></li>
+<li><a href="../dev-guide/">Dev Guide</a></li>
+<li><a href="../api-reference/">API Reference</a></li>
+<li><a href="../security/">Security</a></li>
+</ul>
               
             </div>
           </div><footer>

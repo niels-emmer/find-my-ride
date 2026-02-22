@@ -147,6 +147,7 @@
 <li>Short-lived access token + rotating refresh token cookie</li>
 <li>Session restoration on app startup using refresh endpoint</li>
 <li>Refresh-token revocation on logout and password changes</li>
+<li>Manual logout guard blocks same-session silent refresh to prevent mobile logout/refresh race re-authentication</li>
 <li>Input validation/sanitization on API boundaries</li>
 <li>Security scan workflow available (<code>make security-scan</code>)</li>
 </ul>
@@ -155,6 +156,7 @@
 <li><code>Parked?</code> form supports location and no-GPS fallback using notes/photos</li>
 <li>In-app camera capture (<code>getUserMedia</code>) with gallery fallback</li>
 <li>Tap-to-expand full-size image previews for parking photos</li>
+<li>Home tab layout hardened for mobile to prevent horizontal overflow and off-screen bottom navigation</li>
 <li>Active parking card includes:</li>
 <li>started time</li>
 <li>running duration</li>
@@ -229,5 +231,5 @@
 
 <!--
 MkDocs version : 1.5.3
-Build Date UTC : 2026-02-22 18:08:14.008733+00:00
+Build Date UTC : 2026-02-22 18:46:16.285016+00:00
 -->
