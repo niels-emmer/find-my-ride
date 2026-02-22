@@ -1,4 +1,4 @@
-.PHONY: up down logs build test test-local test-frontend test-all docs-serve docs-build security-scan
+.PHONY: up down logs build test test-local test-frontend test-infra test-all docs-serve docs-build security-scan
 
 up:
 	docker compose up --build
@@ -21,7 +21,10 @@ test-local:
 test-frontend:
 	cd frontend && npm test
 
-test-all: test test-frontend
+test-infra:
+	./scripts/test-nginx-conf.sh
+
+test-all: test test-frontend test-infra
 
 docs-serve:
 	mkdocs serve -a 127.0.0.1:8001

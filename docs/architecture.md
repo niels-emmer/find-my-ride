@@ -24,6 +24,7 @@ Production-style (`docker-compose.prod.yml`):
 - `frontend` static app on `:${FRONTEND_PORT}` (container `80`; default host fallback `18080`)
 - `backend` internal API
 - `db` internal PostgreSQL
+- Frontend nginx proxies `/api/*` to backend (`http://backend:8000`) so the browser keeps same-origin API calls
 
 ## Backend architecture
 
