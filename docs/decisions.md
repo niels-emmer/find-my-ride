@@ -179,4 +179,16 @@
 - Details:
   - Accent selection is stored in browser local storage (`fmr_accent_color`).
   - Accent applies to primary CTA buttons and active navigation/auth selectors.
+  - Each preset defines separate light/dark tone values so contrast remains readable across both themes.
   - Presets are curated for white foreground label readability over the existing app background treatment.
+
+## ADR-024: Surface release metadata in settings UI
+
+- Date: 2026-02-22
+- Status: accepted
+- Decision: Show repository name, app version, and release reference in a settings footer above the bottom tab bar.
+- Why: Gives operators/users a quick visible way to confirm what build is currently running on a device/PWA instance.
+- Details:
+  - Footer links repo name to `REPO_URL` and release ref to `REPO_URL/commit/<RELEASE_SHA>` when set.
+  - Frontend reads `VITE_APP_VERSION`, `VITE_RELEASE_SHA`, and `VITE_REPO_URL` with safe defaults.
+  - Compose/dev/prod configs expose `APP_VERSION`, `RELEASE_SHA`, and `REPO_URL` for consistent builds.

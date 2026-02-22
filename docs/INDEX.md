@@ -20,7 +20,8 @@ This is the project memory entrypoint for engineers and agents.
 - Last parked and history use expandable record cards (`More info`/`Close`) with map preview, location text, photos, and direction links
 - Coordinates with coordinate-style labels are blocked by API validation to keep stored addresses human-readable
 - Top app bar includes account menu (signed-in identity + sign-out)
-- Settings profile includes password change, theme switcher, accent color presets, and MFA controls
+- Settings profile includes password change, theme switcher, theme-aware accent color presets, and MFA controls
+- Settings tab footer shows repo name, app version, and release reference with links to repository/commit
 - Admin panel supports add/edit/delete user management (excluding self-actions) with role/password updates via modal
 - Docker dev frontend API path uses `/api` + Vite proxy target for local-network phone access
 - Access control implemented: per-user data isolation with admin override

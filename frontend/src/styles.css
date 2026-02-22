@@ -159,6 +159,7 @@ code {
   align-items: center;
   gap: 0.55rem;
   font-weight: 700;
+  font-size: 1.1rem;
   letter-spacing: 0.02em;
   min-width: 0;
 }
@@ -669,6 +670,28 @@ button,
   backdrop-filter: blur(7px);
 }
 
+.settings-build-meta {
+  position: fixed;
+  left: 50%;
+  bottom: calc(4.85rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(34rem, calc(100vw - 2rem));
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  z-index: 995;
+}
+
+.settings-meta-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
 .tab-button {
   border: 1px solid transparent;
   border-radius: 0.75rem;
@@ -781,6 +804,11 @@ button,
 
   .bottom-tabs {
     bottom: 0.6rem;
+  }
+
+  .settings-build-meta {
+    bottom: calc(4.45rem + env(safe-area-inset-bottom, 0px));
+    font-size: 0.74rem;
   }
 
   .auth-main {

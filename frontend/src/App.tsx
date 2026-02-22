@@ -12,17 +12,71 @@ const APP_BACKGROUND_IMAGE_URL = '/images/parking-background-option-3.jpg';
 const USERNAME_PATTERN = '[A-Za-z0-9](?:[A-Za-z0-9._-]{1,62}[A-Za-z0-9])?';
 const PASSWORD_POLICY_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,128}';
 const PASSWORD_POLICY_HINT = 'Use 8-128 chars including uppercase, lowercase, and a digit.';
+const DEFAULT_REPOSITORY_URL = 'https://github.com/niels-emmer/find-my-ride';
+const APP_VERSION = (import.meta.env.VITE_APP_VERSION || 'dev').trim() || 'dev';
+const RELEASE_SHA = (import.meta.env.VITE_RELEASE_SHA || '').trim();
+const REPOSITORY_URL =
+  ((import.meta.env.VITE_REPO_URL || DEFAULT_REPOSITORY_URL).trim() || DEFAULT_REPOSITORY_URL).replace(/\/+$/, '');
+const RELEASE_REF = RELEASE_SHA ? RELEASE_SHA.slice(0, 12) : 'local';
+const RELEASE_URL = RELEASE_SHA ? `${REPOSITORY_URL}/commit/${RELEASE_SHA}` : REPOSITORY_URL;
 const DEFAULT_ACCENT_COLOR: AccentColor = 'evergreen';
-const ACCENT_OPTIONS: Array<{ id: AccentColor; label: string; primary: string; strong: string; swatch: string }> = [
-  { id: 'evergreen', label: 'Evergreen', primary: '#0e3f3b', strong: '#1a7269', swatch: '#0e3f3b' },
-  { id: 'cobalt', label: 'Cobalt', primary: '#1f4f8a', strong: '#2f6db5', swatch: '#1f4f8a' },
-  { id: 'cranberry', label: 'Cranberry', primary: '#7a2f43', strong: '#a3415b', swatch: '#7a2f43' },
-  { id: 'amber', label: 'Amber', primary: '#7c4f00', strong: '#a36700', swatch: '#7c4f00' },
-  { id: 'graphite', label: 'Graphite', primary: '#334455', strong: '#4b6178', swatch: '#334455' }
+type ResolvedTheme = 'light' | 'dark';
+type AccentOption = {
+  id: AccentColor;
+  label: string;
+  swatch: string;
+  tones: Record<ResolvedTheme, { primary: string; strong: string }>;
+};
+const ACCENT_OPTIONS: AccentOption[] = [
+  {
+    id: 'evergreen',
+    label: 'Evergreen',
+    swatch: '#0e3f3b',
+    tones: {
+      light: { primary: '#0e3f3b', strong: '#1a7269' },
+      dark: { primary: '#1f7f74', strong: '#2e9f92' }
+    }
+  },
+  {
+    id: 'cobalt',
+    label: 'Cobalt',
+    swatch: '#1f4f8a',
+    tones: {
+      light: { primary: '#1f4f8a', strong: '#2f6db5' },
+      dark: { primary: '#2f6db5', strong: '#4b87cc' }
+    }
+  },
+  {
+    id: 'cranberry',
+    label: 'Cranberry',
+    swatch: '#7a2f43',
+    tones: {
+      light: { primary: '#7a2f43', strong: '#a3415b' },
+      dark: { primary: '#9c4259', strong: '#ba5f76' }
+    }
+  },
+  {
+    id: 'amber',
+    label: 'Amber',
+    swatch: '#7c4f00',
+    tones: {
+      light: { primary: '#7c4f00', strong: '#a36700' },
+      dark: { primary: '#a36700', strong: '#c38312' }
+    }
+  },
+  {
+    id: 'graphite',
+    label: 'Graphite',
+    swatch: '#334455',
+    tones: {
+      light: { primary: '#334455', strong: '#4b6178' },
+      dark: { primary: '#4f6680', strong: '#6885a3' }
+    }
+  }
 ];
-const ACCENT_BY_ID: Record<AccentColor, (typeof ACCENT_OPTIONS)[number]> = Object.fromEntries(
+const ACCENT_BY_ID: Record<AccentColor, AccentOption> = Object.fromEntries(
   ACCENT_OPTIONS.map((entry) => [entry.id, entry])
-) as Record<AccentColor, (typeof ACCENT_OPTIONS)[number]>;
+) as Record<AccentColor, AccentOption>;
 
 type TabKey = 'find' | 'history' | 'settings';
 type AuthMode = 'login' | 'register';
@@ -251,9 +305,9 @@ function App(): JSX.Element {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
 
     const applyThemeAndAccent = () => {
-      const resolved = themeMode === 'system' ? (media.matches ? 'dark' : 'light') : themeMode;
-      document.documentElement.setAttribute('data-theme', resolved);
-      const accent = ACCENT_BY_ID[accentColor];
+      const resolvedTheme: ResolvedTheme = themeMode === 'system' ? (media.matches ? 'dark' : 'light') : themeMode;
+      document.documentElement.setAttribute('data-theme', resolvedTheme);
+      const accent = ACCENT_BY_ID[accentColor].tones[resolvedTheme];
       document.documentElement.style.setProperty('--ui-accent', accent.primary);
       document.documentElement.style.setProperty('--ui-accent-strong', accent.strong);
       localStorage.setItem(THEME_KEY, themeMode);
@@ -588,6 +642,18 @@ function App(): JSX.Element {
           </div>
         )}
       </main>
+
+      {activeTab === 'settings' ? (
+        <p className="settings-build-meta" aria-label="Build metadata">
+          <a className="settings-meta-link" href={REPOSITORY_URL} target="_blank" rel="noreferrer">
+            find-my-ride
+          </a>
+          <span>v{APP_VERSION}</span>
+          <a className="settings-meta-link" href={RELEASE_URL} target="_blank" rel="noreferrer">
+            {RELEASE_REF}
+          </a>
+        </p>
+      ) : null}
 
       <BottomTabBar activeTab={activeTab} onSelect={setActiveTab} />
 

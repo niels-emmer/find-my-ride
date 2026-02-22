@@ -28,7 +28,7 @@ Docs are available in `docs/INDEX.md` (source) and `site/INDEX/index.html` (gene
 - Saved addresses are normalized in street-first format (for example `Street 12, ZIP City, Province, Country`)
 - Fixed bottom-tab app navigation: home, history, settings
 - Top app bar with account menu (signed-in user + sign out)
-- Profile features: change password, theme switcher, MFA setup
+- Profile features: change password, theme switcher, accent selection, MFA setup
 - Password policy enforcement for account creation/reset: 8-128 chars, at least one uppercase, one lowercase, one digit
 - MFA setup includes a scannable QR code plus fallback secret/URI display
 - Multi-user data isolation (users only see their own records)
@@ -39,7 +39,8 @@ Docs are available in `docs/INDEX.md` (source) and `site/INDEX/index.html` (gene
 - Two-phase MFA sign-in: username/password first, OTP prompt only when required
 - Optional MFA (TOTP) per user
 - Session auth with rotating refresh tokens (HttpOnly cookie) + automatic access-token refresh/retry
-- Light/dark/system theme support with user-selectable accent color presets
+- Light/dark/system theme support with user-selectable accent presets tuned per resolved theme
+- Settings footer metadata (repo, app version, release ref) with repository/commit links
 
 ## Screenshots
 
@@ -138,6 +139,7 @@ make security-scan
 - `docker-compose.prod.yml` reads `FRONTEND_PORT` for host mapping (fallback `18080`).
 - Production frontend nginx proxies `/api/*` to backend internally (`backend:8000`), so browsers keep same-origin API calls.
 - Set `APP_VERSION` to your release tag (for example `v0.1-beta.1`) before building production images so the PWA service worker cache version rotates on deploy.
+- Set `RELEASE_SHA` (for example `git rev-parse HEAD`) and optionally `REPO_URL` so settings can display a clickable release reference.
 - Set secure session values for production:
   - `ACCESS_TOKEN_EXPIRE_MINUTES` (recommended: 10-15)
   - `REFRESH_TOKEN_EXPIRE_DAYS` (recommended: 14-30)
