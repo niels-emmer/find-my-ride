@@ -21,6 +21,7 @@ venv/
 # Node
 frontend/node_modules/
 frontend/dist/
+package-lock.json
 
 # Runtime data
 backend/.pytest_cache/
