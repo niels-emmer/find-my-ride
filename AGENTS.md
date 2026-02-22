@@ -11,6 +11,8 @@ Agents working here must keep the documentation memory system current with the c
 - If code and docs diverge, update docs immediately.
 - No task is complete without validation of changed behavior.
 - Every new or changed piece of functionality must include automated test coverage.
+- After code changes or documentation updates, commit changes on the active working branch.
+- Use descriptive commit messages that clearly explain the change intent and scope.
 - Keep architecture/security decisions documented in `docs/decisions.md`.
 - Keep API behavior documented in `docs/api-reference.md` when endpoints change.
 - Keep onboarding/developer workflow up to date in `docs/dev-guide.md`.
