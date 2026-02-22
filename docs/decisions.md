@@ -67,7 +67,7 @@
 
 - Date: 2026-02-22
 - Status: accepted
-- Decision: Replace manual latitude/longitude fields with explicit `Locate` flow (GPS + reverse place lookup / `No reception`) and use 3 camera-first photo slots with thumbnail preview/retake/remove controls.
+- Decision: Replace manual latitude/longitude fields with explicit `Locate` flow (GPS + reverse place lookup / `No location could be established`) and use 3 camera-first photo slots with thumbnail preview/retake/remove controls.
 - Why: Improves mobile ergonomics and reduces user error in garages/cities while keeping the save flow explicit.
 
 ## ADR-011: Location optional with evidence fallback

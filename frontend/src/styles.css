@@ -236,6 +236,28 @@ code {
   font-size: 1rem;
 }
 
+.location-status-box {
+  margin: 0;
+  min-height: 2.7rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 0.5rem;
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--bg-elevated) 84%, transparent);
+  display: flex;
+  align-items: center;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.location-status-box.ready {
+  color: var(--text);
+}
+
+.location-status-box.placeholder,
+.location-status-box.unavailable {
+  color: var(--muted);
+}
+
 .stack {
   display: grid;
   gap: 0.7rem;

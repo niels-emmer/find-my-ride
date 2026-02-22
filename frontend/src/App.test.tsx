@@ -998,7 +998,7 @@ describe('App tabs and settings', () => {
     }
   });
 
-  it('treats reverse-lookup failure as unavailable for address-based saves', async () => {
+  it('shows unavailable location text when reverse lookup fails', async () => {
     seedAuthenticatedSession(false);
     mockGeolocationSuccess(40.7128, -74.006);
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
@@ -1009,8 +1009,7 @@ describe('App tabs and settings', () => {
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Locate' }));
-    expect(await screen.findByText('No reception')).toBeInTheDocument();
-    expect(screen.getByText('Could not resolve a physical address. Please retry in a clearer signal area.')).toBeInTheDocument();
+    expect(await screen.findByText('No location could be established')).toBeInTheDocument();
 
     fetchMock.mockRestore();
   });
@@ -1028,7 +1027,7 @@ describe('App tabs and settings', () => {
     expect(apiMock.createRecord).not.toHaveBeenCalled();
   });
 
-  it('locates with reverse-lookup name and shows no reception when lookup fails', async () => {
+  it('locates with reverse-lookup name and shows unavailable text when lookup fails', async () => {
     seedAuthenticatedSession(false);
     mockGeolocationSuccess(40.7128, -74.006);
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
@@ -1038,16 +1037,15 @@ describe('App tabs and settings', () => {
 
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+    expect(screen.getByText('Tap locate to determine location')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Locate' }));
     expect(await screen.findByText(/Battery Park Garage, New York/)).toBeInTheDocument();
-    expect(screen.getByText(/40\.712800,\s*-74\.006000/)).toBeInTheDocument();
 
     fetchMock.mockRestore();
     mockGeolocationFailure('No signal');
     setSecureContext(false);
     fireEvent.click(screen.getByRole('button', { name: 'Locate' }));
-    expect(await screen.findByText('No reception')).toBeInTheDocument();
-    expect(screen.getByText('Mobile browsers usually require HTTPS for geolocation.')).toBeInTheDocument();
+    expect(await screen.findByText('No location could be established')).toBeInTheDocument();
   });
 });

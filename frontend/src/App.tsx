@@ -253,10 +253,6 @@ function geolocate(): Promise<{ latitude: number; longitude: number }> {
   });
 }
 
-function coordinateLabel(latitude: number, longitude: number): string {
-  return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-}
-
 function normalizeLocationLabelParts(parts: Array<string | undefined>): string {
   const seen = new Set<string>();
   return parts
@@ -1201,7 +1197,6 @@ function ParkNowCard({
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const [locatedFix, setLocatedFix] = useState<LocatedFix | null>(null);
   const [locateState, setLocateState] = useState<'idle' | 'ready' | 'unavailable'>('idle');
-  const [locateHint, setLocateHint] = useState<string>('');
   const [cameraSlotIndex, setCameraSlotIndex] = useState<number | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraBusy, setCameraBusy] = useState(false);
@@ -1407,18 +1402,10 @@ function ParkNowCard({
       };
       setLocatedFix(nextFix);
       setLocateState('ready');
-      setLocateHint('');
       return nextFix;
-    } catch (error) {
+    } catch {
       setLocatedFix(null);
       setLocateState('unavailable');
-      if (!window.isSecureContext) {
-        setLocateHint('Mobile browsers usually require HTTPS for geolocation.');
-      } else if (error instanceof Error && error.message === 'Location name unavailable.') {
-        setLocateHint('Could not resolve a physical address. Please retry in a clearer signal area.');
-      } else {
-        setLocateHint('');
-      }
       return null;
     } finally {
       setLocating(false);
@@ -1429,10 +1416,22 @@ function ParkNowCard({
     <>
       <div className="stack park-form">
         <p className="muted">
-          Use Find My Ride to quickly save your current location and return to it when you need your car again. Tap Locate below, optionally add a note and photos, and tap 'remember'...
+          Quickly save your current location and return to it when you need your car again.
         </p>
 
         <div className="stack">
+          <h3 className="section-heading">You are here:</h3>
+          <p
+            className={`location-status-box ${
+              locateState === 'ready' && locatedFix ? 'ready' : locateState === 'unavailable' ? 'unavailable' : 'placeholder'
+            }`}
+          >
+            {locateState === 'ready' && locatedFix
+              ? locatedFix.placeLabel
+              : locateState === 'unavailable'
+                ? 'No location could be established'
+                : 'Tap locate to determine location'}
+          </p>
           <button
             className="btn secondary"
             type="button"
@@ -1443,20 +1442,6 @@ function ParkNowCard({
           >
             {locating ? 'Locating...' : 'Locate'}
           </button>
-          {locateState === 'ready' && locatedFix ? (
-            <p className="small-meta">
-              {locatedFix.placeLabel}
-              <br />
-              {coordinateLabel(locatedFix.latitude, locatedFix.longitude)}
-            </p>
-          ) : locateState === 'unavailable' ? (
-            <>
-              <p className="small-meta error">No reception</p>
-              {locateHint ? <p className="small-meta">{locateHint}</p> : null}
-            </>
-          ) : (
-            <p className="small-meta">Tap Locate to confirm position.</p>
-          )}
         </div>
 
         <label className="field">

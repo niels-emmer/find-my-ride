@@ -62,8 +62,8 @@ Single-page React app with feature sections:
 - Park-now photo intake uses 3 camera-first capture slots with thumbnail preview/retake/remove controls
 - Camera capture is handled in-app with `getUserMedia` (when available) to avoid mobile browser restarts during external camera handoff; gallery/file-picker fallback remains available
 - File-picker selection is synchronized on `focus`/`visibilitychange` for fallback browser flows
-- Park-now location state is explicit (`ready` with place/coords or `No reception`)
-- On non-secure contexts (common on HTTP LAN URLs), location state surfaces an HTTPS requirement hint for mobile browsers
+- Park-now location state is explicit (`ready` with resolved place text or `No location could be established`)
+- On non-secure contexts (common on HTTP LAN URLs), `Locate` typically resolves to `No location could be established`
 - Park-now start accepts either a valid location pair or note/photo evidence, allowing garage use when GPS is unavailable
 - Park-now requires a resolved physical `location_label` when coordinates are saved (coordinate-style labels are rejected)
 - Home active state (`You are parked`) shows start timestamp, running duration, optional location map, notes, and thumbnails until user confirms `End parking`

@@ -53,7 +53,7 @@ Endpoints:
 
 - Access the app from another device with `http://<host-lan-ip>:<FRONTEND_PORT>`.
 - Keep `VITE_API_URL=/api` for this flow. If set to `http://localhost:...`, phones/tablets will try to call their own localhost and stall on status loading.
-- Geolocation caveat: most mobile browsers require HTTPS for GPS access. Over plain HTTP LAN URLs, `Locate` can fail immediately and show `No reception`.
+- Geolocation caveat: most mobile browsers require HTTPS for GPS access. Over plain HTTP LAN URLs, `Locate` can fail immediately and show `No location could be established`.
 
 ## Bootstrap flow
 
@@ -89,7 +89,7 @@ Endpoints:
 - On successful save with coordinates, the current place label is persisted as `location_label` for later history/latest display.
 - Coordinate-style location labels are rejected by the API; coordinates must be paired with a physical address label.
 - Stored labels are normalized in street-first order (`Street 12, ZIP City, Province, Country`).
-- On failure, the UI shows `No reception`; save is still allowed when note and/or photos are provided.
+- On failure, the UI shows `No location could be established`; save is still allowed when note and/or photos are provided.
 - Photos are handled via 3 capture slots; each slot is an empty action button or an image thumbnail that can be retaken/removed.
 - Camera capture prefers an in-app camera modal (`getUserMedia`) to avoid external camera-app round trips on memory-constrained mobile browsers; gallery/file-picker fallback remains available.
 - Any parking photo thumbnail can be tapped/clicked to open a full-size preview modal.
