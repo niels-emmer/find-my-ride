@@ -236,7 +236,7 @@
 - Details:
   - `refresh.sh` authenticates a demo user, applies deterministic history seed data, and runs the capture script.
   - `seed_history.sql` sets fixed sample rows so `history` capture state remains stable (second row expanded with map and no note/photos).
-  - `capture.mjs` enforces required dimensions (`1170x1992`), theme (`dark` + `evergreen`), and `2.5x` visual zoom.
+  - `capture.mjs` enforces required dimensions (`1170x1992`), theme (`dark` + `evergreen`), and `2.0x` visual zoom.
 
 ## Related docs
 

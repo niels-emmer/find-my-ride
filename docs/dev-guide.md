@@ -158,7 +158,7 @@ When refreshing README screenshots (`docs/assets/screenshots/home.png`, `history
 
 - Canonical automation: `./scripts/readme-screenshots/refresh.sh`
 - Output format/size: PNG at `1170x1992` for each image.
-- Visual scale: apply `2.5x` page zoom during capture so card text and controls remain readable in the 3-up README gallery.
+- Visual scale: apply `2.0x` page zoom during capture so card text and controls remain readable in the 3-up README gallery.
 - Theme: dark mode (`fmr_theme_mode=dark`) with the default `evergreen` accent.
 - Environment: run against the local Docker stack (`docker compose up -d --build`) on the frontend URL (`http://127.0.0.1:${FRONTEND_PORT}`; current default in this repo is `15173`).
 - Data setup: use the dedicated demo account (`readme_demo` by default, configurable via `README_DEMO_USERNAME`) with at least 3 history rows:

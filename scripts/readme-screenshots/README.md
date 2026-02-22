@@ -6,7 +6,7 @@ This folder keeps the canonical automation for regenerating README screenshot as
 
 - `refresh.sh`: end-to-end workflow (authenticate demo user, seed DB rows, capture screenshots)
 - `seed_history.sql`: deterministic fake history rows used for README captures
-- `capture.mjs`: Playwright capture flow for `home`, `history`, `settings` at `1170x1992` and `2.5x` UI zoom
+- `capture.mjs`: Playwright capture flow for `home`, `history`, `settings` at `1170x1992` and `2.0x` UI zoom
 
 ## Usage
 
