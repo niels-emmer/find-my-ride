@@ -51,6 +51,8 @@ body,
 #root {
   margin: 0;
   min-height: 100%;
+  width: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -185,12 +187,14 @@ code {
 .tab-main {
   padding-bottom: 1rem;
   padding-top: 0.15rem;
+  min-width: 0;
 }
 
 .tab-page {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(12, minmax(0, 1fr));
+  min-width: 0;
 }
 
 .panel {
@@ -201,6 +205,7 @@ code {
   box-shadow: var(--shadow);
   backdrop-filter: blur(6px);
   grid-column: span 12;
+  min-width: 0;
 }
 
 .panel-wide {
@@ -223,6 +228,7 @@ code {
 .small-meta {
   color: var(--muted);
   font-size: 0.9rem;
+  overflow-wrap: anywhere;
 }
 
 .section-heading {
@@ -233,6 +239,7 @@ code {
 .stack {
   display: grid;
   gap: 0.7rem;
+  min-width: 0;
 }
 
 .park-form {
@@ -382,6 +389,7 @@ button,
 .capture-slot {
   display: grid;
   gap: 0.35rem;
+  min-width: 0;
 }
 
 .capture-picker {
@@ -413,6 +421,10 @@ button,
   text-align: center;
   border-radius: 0;
   border: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+  padding-inline: 0.45rem;
 }
 
 .capture-thumb-button {
@@ -516,6 +528,7 @@ button,
 .history-location {
   margin: 0.25rem 0 0.6rem;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .record-note {
