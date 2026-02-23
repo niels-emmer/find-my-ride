@@ -1049,6 +1049,22 @@ function LoginCard({
     <>
       <section className="panel auth-card">
         <h1>{mode === 'login' ? 'Sign in' : 'Register'}</h1>
+        {mode === 'login' ? (
+          <>
+            <p className="muted">find-my-ride helps you remember exactly where you parked.</p>
+            <p className="muted">
+              Log in with your username and password to continue, or click Register to create a free new account.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="muted">Registration is free.</p>
+            <p className="muted">
+              We do not use email for verification or password recovery, so please choose a password you can remember
+              and keep it safe.
+            </p>
+          </>
+        )}
 
         <form
           className="stack"
