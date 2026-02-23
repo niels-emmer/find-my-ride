@@ -2,6 +2,12 @@
 
 This is the main documentation entrypoint for both humans and agents.
 
+## Current status
+
+- Release phase: release candidate
+- Upcoming tag target: `v0.9.0-rc`
+- Last docs validation sweep: February 23, 2026 (`mkdocs build --strict` + manual external-link spot checks)
+
 ## What this project is
 
 `find-my-ride` is a self-hosted, multi-user PWA to help users store and recover where they parked.

@@ -185,7 +185,7 @@
 ## ADR-024: Surface release metadata in settings UI
 
 - Date: 2026-02-22
-- Status: superseded
+- Status: superseded by ADR-030
 - Decision: The settings footer metadata line was removed to reduce UI noise and keep the settings screen focused on user controls.
 - Why: The footer was not essential for primary use and consumed space near bottom navigation, especially on mobile.
 - Details:
@@ -203,7 +203,7 @@
   - Active session shows start time, running duration, optional map, notes, and photo thumbnails.
   - `End parking` requires yes/no confirmation and writes the record to history only after confirmation.
   - Active session is persisted per user in browser local storage to survive app close/reopen.
-  - While active and permission granted, browser notifications can display parked duration updates.
+  - Notification behavior for active sessions is further expanded in ADR-029 (service-worker actions and persistent-style delivery).
 
 ## ADR-026: Manual logout must suppress same-session silent refresh
 

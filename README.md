@@ -25,7 +25,9 @@ Generated (MKdocs) documentation: [https://niels-emmer.github.io/find-my-ride/](
 - If GPS is unavailable (for example underground), parking can still start with note/photos
 - Active parking becomes a sticky `You are parked` state until manually ended
 - Ending parking asks for confirmation and then writes the session to history
+- While parking is active, service-worker notifications can show `You are parked here` with elapsed time plus `Take me there` and `Stop parking` actions
 - History supports expandable details, map preview, photos, notes, and walking links
+- Settings includes an `Info` card with repository link and build version
 - Multi-user with role-based access:
   - users can only access their own data
   - admin can manage users and view all records
@@ -81,7 +83,7 @@ Tech stack:
 - Backend: FastAPI, SQLAlchemy, Pydantic
 - Database: PostgreSQL
 - Packaging/runtime: Docker + Docker Compose
-- Docs: Markdown + MkDocs Material
+- Docs: Markdown + MkDocs
 
 ## Repository Guide
 
