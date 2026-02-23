@@ -2690,7 +2690,7 @@ function InfoCard(): JSX.Element {
       <p className="small-meta info-row">
         Repository:{' '}
         <a className="info-link" href={APP_REPOSITORY_URL} target="_blank" rel="noreferrer">
-          {APP_REPOSITORY_URL}
+          Github
         </a>
       </p>
       <p className="small-meta info-row">

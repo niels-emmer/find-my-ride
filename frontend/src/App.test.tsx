@@ -259,7 +259,7 @@ describe('App tabs and settings', () => {
     fireEvent.click(screen.getByRole('button', { name: 'settings' }));
     expect(await screen.findByRole('heading', { name: 'Profile' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Info' })).toBeInTheDocument();
-    const repositoryLink = screen.getByRole('link', { name: 'https://github.com/niels-emmer/find-my-ride' });
+    const repositoryLink = screen.getByRole('link', { name: 'Github' });
     expect(repositoryLink).toHaveAttribute('href', 'https://github.com/niels-emmer/find-my-ride');
     const versionTag = document.querySelector('.info-version');
     expect(versionTag?.textContent).toBeTruthy();
