@@ -910,6 +910,12 @@ button,
   margin-inline: auto;
 }
 
+.auth-intro-paragraph {
+  margin-top: 0.4rem;
+  margin-bottom: 0.9rem;
+  line-height: 1.45;
+}
+
 @media (min-width: 900px) {
   .panel {
     grid-column: span 6;

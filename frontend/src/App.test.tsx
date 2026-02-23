@@ -270,7 +270,7 @@ describe('App tabs and settings', () => {
     expect(screen.getByText('find-my-ride helps you remember exactly where you parked.')).toBeInTheDocument();
     expect(
       screen.getByText('Log in with your username and password to continue, or click Register to create a free new account.')
-    ).toBeInTheDocument();
+    ).toHaveClass('auth-intro-paragraph');
     expect(screen.queryByLabelText('Open user menu')).not.toBeInTheDocument();
     const authModeNav = screen.getByRole('navigation', { name: 'Authentication mode' });
     expect(within(authModeNav).getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
@@ -284,7 +284,7 @@ describe('App tabs and settings', () => {
       screen.getByText(
         'We do not use email for verification or password recovery, so please choose a password you can remember and keep it safe.'
       )
-    ).toBeInTheDocument();
+    ).toHaveClass('auth-intro-paragraph');
     expect(screen.queryByLabelText('OTP code')).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'newdriver' } });
