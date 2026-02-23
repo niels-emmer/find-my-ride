@@ -70,13 +70,17 @@ Single-page React app with feature sections:
 - When active parking has coordinates, home also shows a `Take me there` section with `Google Maps` and `OpenStreetMap` links; `Actions` section always contains `End parking`
 - Parking thumbnails (home capture, active parking, history details) open a full-size preview modal on tap/click
 - Active parking session is persisted per user in browser storage so app restarts restore the in-progress state
-- Active parking can emit browser notifications with parked duration when notification permission is granted
+- Active parking notifications are shown through service-worker `showNotification` with persistent-style behavior (`requireInteraction`) and update the parked duration while active
+- Notification actions include:
+  - `Take me there` (opens Google Maps walking directions when coordinates are available)
+  - `Stop parking` (sends a service-worker message back to clients to finalize the active parking session)
 - History cards use expandable (`More info`/`Close`) details with OpenStreetMap embed preview, saved location text, a `More details` note section, photo thumbnails, and route/actions sections
 - Date/time rendering in cards is day-first (`dd-mm-yyyy`) with browser-local time
 - History cards provide quick delete action from collapsed state
 - Mobile home layout applies horizontal overflow guards to prevent off-screen content and bottom-tab drift
 - Profile controls: change password, MFA setup/verify/disable, theme mode switch, and accent color preset selection (theme-aware tones, stored client-side)
 - Admin user management and history scope filtering (`Admin` > `Add users` + `Edit users` list with edit/delete actions and role/password modal)
+- Settings includes a dedicated `Info` card with clickable repository URL and the build version tag (`VITE_APP_VERSION`)
 
 PWA support:
 

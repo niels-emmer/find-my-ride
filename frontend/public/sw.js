@@ -2,6 +2,9 @@ const RELEASE_VERSION = new URL(self.location.href).searchParams.get('v') || 'de
 const CACHE_PREFIX = 'find-my-ride-';
 const CACHE_NAME = `${CACHE_PREFIX}${RELEASE_VERSION}`;
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon-192.svg', '/icon-512.svg'];
+const STOP_PARKING_NOTIFICATION_ACTION = 'stop_parking';
+const TAKE_ME_THERE_NOTIFICATION_ACTION = 'take_me_there';
+const STOP_ACTIVE_PARKING_SERVICE_WORKER_MESSAGE = 'FMR_STOP_ACTIVE_PARKING';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -26,6 +29,66 @@ self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     void self.skipWaiting();
   }
+});
+
+async function focusOrOpenAppWindow(appUrl) {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  if (clients.length > 0) {
+    const target = clients[0];
+    if ('focus' in target) {
+      await target.focus();
+    }
+    return target;
+  }
+
+  if (self.clients.openWindow) {
+    return self.clients.openWindow(appUrl || '/');
+  }
+  return null;
+}
+
+async function postStopParkingMessage() {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  if (clients.length === 0) {
+    const opened = await focusOrOpenAppWindow('/');
+    if (opened && 'postMessage' in opened) {
+      opened.postMessage({ type: STOP_ACTIVE_PARKING_SERVICE_WORKER_MESSAGE });
+    }
+    return;
+  }
+
+  await Promise.all(
+    clients.map(async (client) => {
+      if ('focus' in client) {
+        await client.focus();
+      }
+      if ('postMessage' in client) {
+        client.postMessage({ type: STOP_ACTIVE_PARKING_SERVICE_WORKER_MESSAGE });
+      }
+    }),
+  );
+}
+
+self.addEventListener('notificationclick', (event) => {
+  const notificationData = event.notification.data || {};
+  const appUrl = notificationData.appUrl || '/';
+  const takeMeThereUrl = notificationData.takeMeThereUrl || '';
+  const action = event.action;
+  event.notification.close();
+
+  event.waitUntil((async () => {
+    if (action === TAKE_ME_THERE_NOTIFICATION_ACTION && takeMeThereUrl && self.clients.openWindow) {
+      await self.clients.openWindow(takeMeThereUrl);
+      return;
+    }
+
+    if (action === STOP_PARKING_NOTIFICATION_ACTION) {
+      await postStopParkingMessage();
+      return;
+    }
+
+    await focusOrOpenAppWindow(appUrl);
+  })());
 });
 
 async function networkFirst(request) {

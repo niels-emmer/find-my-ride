@@ -34,6 +34,9 @@ const qrcodeMock = vi.hoisted(() => ({
 }));
 
 const DEFAULT_USER_AGENT = window.navigator.userAgent;
+type NotificationOptionsWithActions = NotificationOptions & {
+  actions?: Array<{ action: string; title: string }>;
+};
 
 vi.mock('./api', () => ({
   api: apiMock,
@@ -89,6 +92,45 @@ function setMediaDevices(
     configurable: true,
     value: getUserMedia ? { getUserMedia } : undefined
   });
+}
+
+function mockServiceWorker() {
+  const listeners = new Set<(event: MessageEvent) => void>();
+  const registration = {
+    showNotification: vi.fn(async () => undefined),
+    getNotifications: vi.fn(async () => [])
+  };
+  const controller = { postMessage: vi.fn() };
+
+  Object.defineProperty(window.navigator, 'serviceWorker', {
+    configurable: true,
+    value: {
+      ready: Promise.resolve(registration),
+      controller,
+      addEventListener: (eventName: string, handler: EventListenerOrEventListenerObject) => {
+        if (eventName !== 'message' || typeof handler !== 'function') {
+          return;
+        }
+        listeners.add(handler as (event: MessageEvent) => void);
+      },
+      removeEventListener: (eventName: string, handler: EventListenerOrEventListenerObject) => {
+        if (eventName !== 'message' || typeof handler !== 'function') {
+          return;
+        }
+        listeners.delete(handler as (event: MessageEvent) => void);
+      }
+    }
+  });
+
+  return {
+    registration,
+    controller,
+    dispatchMessage: (data: unknown) => {
+      listeners.forEach((listener) => {
+        listener({ data } as MessageEvent);
+      });
+    }
+  };
 }
 
 function seedAuthenticatedSession(isAdmin: boolean): void {
@@ -159,6 +201,10 @@ describe('App tabs and settings', () => {
     Object.values(apiMock).forEach((mockFn) => {
       mockFn.mockReset();
     });
+    Object.defineProperty(window.navigator, 'serviceWorker', {
+      configurable: true,
+      value: undefined
+    });
     apiMock.refresh.mockRejectedValue(new Error('Refresh token is missing'));
     apiMock.logout.mockResolvedValue({ message: 'Signed out' });
     qrcodeMock.toDataURL.mockReset();
@@ -212,6 +258,11 @@ describe('App tabs and settings', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'settings' }));
     expect(await screen.findByRole('heading', { name: 'Profile' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Info' })).toBeInTheDocument();
+    const repositoryLink = screen.getByRole('link', { name: 'https://github.com/niels-emmer/find-my-ride' });
+    expect(repositoryLink).toHaveAttribute('href', 'https://github.com/niels-emmer/find-my-ride');
+    const versionTag = document.querySelector('.info-version');
+    expect(versionTag?.textContent).toBeTruthy();
 
     expect(screen.getByLabelText('Appearance')).toBeInTheDocument();
     expect(screen.getByRole('radiogroup', { name: 'Accent color' })).toBeInTheDocument();
@@ -944,37 +995,23 @@ describe('App tabs and settings', () => {
     expect(activeValue.tagName).toBe('STRONG');
   });
 
-  it('requests browser notifications for active parking sessions when available', async () => {
+  it('shows active parking notifications via service worker with notification actions', async () => {
     seedAuthenticatedSession(false);
     mockGeolocationFailure('No signal');
+    const serviceWorker = mockServiceWorker();
 
-    const notificationCalls = vi.fn();
-    const visibilityDescriptor = Object.getOwnPropertyDescriptor(document, 'visibilityState');
     const notificationDescriptor = Object.getOwnPropertyDescriptor(window, 'Notification');
-    const focusSpy = vi.spyOn(window, 'focus').mockImplementation(() => {});
-    class NotificationMock {
+    class NotificationPermissionMock {
       static permission: NotificationPermission = 'default';
-      static instances: NotificationMock[] = [];
       static requestPermission = vi.fn(async (): Promise<NotificationPermission> => {
-        NotificationMock.permission = 'granted';
+        NotificationPermissionMock.permission = 'granted';
         return 'granted';
       });
-      onclick: (() => void) | null = null;
-      close = vi.fn();
-
-      constructor(title: string, options?: NotificationOptions) {
-        notificationCalls(title, options);
-        NotificationMock.instances.push(this);
-      }
     }
 
-    Object.defineProperty(document, 'visibilityState', {
-      configurable: true,
-      value: 'hidden'
-    });
     Object.defineProperty(window, 'Notification', {
       configurable: true,
-      value: NotificationMock
+      value: NotificationPermissionMock
     });
 
     try {
@@ -987,21 +1024,64 @@ describe('App tabs and settings', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
 
       await waitFor(() => {
-        expect(NotificationMock.requestPermission).toHaveBeenCalledTimes(1);
+        expect(NotificationPermissionMock.requestPermission).toHaveBeenCalledTimes(1);
       });
       await waitFor(() => {
-        expect(notificationCalls).toHaveBeenCalled();
+        expect(serviceWorker.registration.showNotification).toHaveBeenCalled();
       });
-      const firstCallOptions = notificationCalls.mock.calls[0]?.[1] as NotificationOptions | undefined;
-      expect(firstCallOptions?.body).toContain('Active:');
-      expect(NotificationMock.instances[0]?.onclick).toBeTypeOf('function');
-      (NotificationMock.instances[0].onclick as () => void)();
-      expect(focusSpy).toHaveBeenCalled();
+      const firstCall = serviceWorker.registration.showNotification.mock.calls[0] as unknown[] | undefined;
+      expect(firstCall).toBeDefined();
+      const title = String(firstCall?.[0] ?? '');
+      const options = (firstCall?.[1] ?? {}) as NotificationOptionsWithActions;
+      expect(title).toBe('You are parked here');
+      expect(options.body).toContain('Parked for');
+      expect(options.tag).toBe('fmr-active-parking');
+      expect(options.requireInteraction).toBe(true);
+      expect(options.actions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ action: 'take_me_there', title: 'Take me there' }),
+          expect.objectContaining({ action: 'stop_parking', title: 'Stop parking' })
+        ])
+      );
     } finally {
-      focusSpy.mockRestore();
-      if (visibilityDescriptor) {
-        Object.defineProperty(document, 'visibilityState', visibilityDescriptor);
+      if (notificationDescriptor) {
+        Object.defineProperty(window, 'Notification', notificationDescriptor);
       }
+    }
+  });
+
+  it('ends active parking when service worker sends stop action message', async () => {
+    seedAuthenticatedSession(false);
+    mockGeolocationFailure('No signal');
+    const serviceWorker = mockServiceWorker();
+
+    const notificationDescriptor = Object.getOwnPropertyDescriptor(window, 'Notification');
+    class NotificationPermissionMock {
+      static permission: NotificationPermission = 'granted';
+      static requestPermission = vi.fn(async (): Promise<NotificationPermission> => 'granted');
+    }
+    Object.defineProperty(window, 'Notification', {
+      configurable: true,
+      value: NotificationPermissionMock
+    });
+
+    try {
+      render(<App />);
+      expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+
+      fireEvent.change(screen.getByLabelText('Note (optional)'), {
+        target: { value: 'B2 near blue elevator' }
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Remember This' }));
+      expect(await screen.findByRole('heading', { name: 'You are parked' })).toBeInTheDocument();
+
+      serviceWorker.dispatchMessage({ type: 'FMR_STOP_ACTIVE_PARKING' });
+
+      await waitFor(() => {
+        expect(apiMock.createRecord).toHaveBeenCalledTimes(1);
+      });
+      expect(await screen.findByRole('heading', { name: 'Parked?' })).toBeInTheDocument();
+    } finally {
       if (notificationDescriptor) {
         Object.defineProperty(window, 'Notification', notificationDescriptor);
       }

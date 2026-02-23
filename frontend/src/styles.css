@@ -916,6 +916,26 @@ button,
   line-height: 1.45;
 }
 
+.info-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.info-row {
+  margin: 0;
+}
+
+.info-link {
+  color: var(--ui-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+  overflow-wrap: anywhere;
+}
+
+.info-version {
+  font-family: var(--font-mono);
+}
+
 @media (min-width: 900px) {
   .panel {
     grid-column: span 6;

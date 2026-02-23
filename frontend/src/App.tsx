@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 
 import { api } from './api';
@@ -10,6 +10,12 @@ const THEME_KEY = 'fmr_theme_mode';
 const ACCENT_KEY = 'fmr_accent_color';
 const ACTIVE_PARKING_KEY = 'fmr_active_parking_by_user_v1';
 const APP_BACKGROUND_IMAGE_URL = '/images/parking-background-option-3.jpg';
+const APP_REPOSITORY_URL = 'https://github.com/niels-emmer/find-my-ride';
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || 'dev';
+const ACTIVE_PARKING_NOTIFICATION_TAG = 'fmr-active-parking';
+const STOP_PARKING_NOTIFICATION_ACTION = 'stop_parking';
+const TAKE_ME_THERE_NOTIFICATION_ACTION = 'take_me_there';
+const STOP_ACTIVE_PARKING_SERVICE_WORKER_MESSAGE = 'FMR_STOP_ACTIVE_PARKING';
 const USERNAME_PATTERN = '[A-Za-z0-9](?:[A-Za-z0-9._-]{1,62}[A-Za-z0-9])?';
 const PASSWORD_POLICY_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,128}';
 const PASSWORD_POLICY_HINT = 'Use 8-128 chars including uppercase, lowercase, and a digit.';
@@ -92,6 +98,20 @@ type ActiveParkingSession = {
 type ExpandedPhoto = {
   src: string;
   alt: string;
+};
+type ActiveParkingNotificationAction = {
+  action: string;
+  title: string;
+};
+type ActiveParkingNotificationData = {
+  appUrl: string;
+  takeMeThereUrl: string | null;
+};
+type ActiveParkingNotificationOptions = NotificationOptions & {
+  renotify?: boolean;
+  requireInteraction?: boolean;
+  actions?: ActiveParkingNotificationAction[];
+  data?: ActiveParkingNotificationData;
 };
 
 function normalizeUsernameInput(value: string): string {
@@ -213,6 +233,49 @@ function openStreetMapEmbedUrl(lat: number, lng: number): string {
     marker: `${lat},${lng}`
   });
   return `https://www.openstreetmap.org/export/embed.html?${search.toString()}`;
+}
+
+function buildActiveParkingNotificationOptions(parking: ActiveParkingSession): ActiveParkingNotificationOptions {
+  const hasLocation = parking.latitude !== null && parking.longitude !== null;
+  const takeMeThereUrl = hasLocation
+    ? googleMapsDirectionsUrl(parking.latitude as number, parking.longitude as number)
+    : null;
+
+  return {
+    body: `Parked for ${formatActiveDuration(parking.started_at)}`,
+    tag: ACTIVE_PARKING_NOTIFICATION_TAG,
+    renotify: true,
+    requireInteraction: true,
+    icon: '/icon-192.svg',
+    badge: '/icon-192.svg',
+    actions: [
+      { action: TAKE_ME_THERE_NOTIFICATION_ACTION, title: 'Take me there' },
+      { action: STOP_PARKING_NOTIFICATION_ACTION, title: 'Stop parking' }
+    ],
+    data: {
+      appUrl: `${window.location.origin}/`,
+      takeMeThereUrl
+    }
+  };
+}
+
+async function showActiveParkingNotification(parking: ActiveParkingSession): Promise<void> {
+  if (!navigator.serviceWorker) {
+    return;
+  }
+  const registration = await navigator.serviceWorker.ready;
+  await registration.showNotification('You are parked here', buildActiveParkingNotificationOptions(parking));
+}
+
+async function clearActiveParkingNotifications(): Promise<void> {
+  if (!navigator.serviceWorker) {
+    return;
+  }
+  const registration = await navigator.serviceWorker.ready;
+  const notifications = await registration.getNotifications({ tag: ACTIVE_PARKING_NOTIFICATION_TAG });
+  notifications.forEach((notification) => {
+    notification.close();
+  });
 }
 
 function recordLocationSummary(record: ParkingRecord): string {
@@ -352,6 +415,7 @@ function App(): JSX.Element {
   const tokenRef = useRef<string>(token);
   const activeParkingOwnerRef = useRef<string | null>(null);
   const manualLogoutRef = useRef<boolean>(false);
+  const endParkingInFlightRef = useRef<boolean>(false);
 
   const ownerIdForQuery = useMemo(() => {
     if (!currentUser?.is_admin) {
@@ -518,41 +582,80 @@ function App(): JSX.Element {
     saveActiveParkingForUser(userId, activeParking);
   }, [currentUser?.id, activeParking]);
 
+  const endActiveParkingSession = useCallback(
+    async (session: ActiveParkingSession): Promise<void> => {
+      if (!currentUser) {
+        throw new Error('Sign in again before ending parking.');
+      }
+      if (endParkingInFlightRef.current) {
+        return;
+      }
+
+      endParkingInFlightRef.current = true;
+      try {
+        const formData = new FormData();
+        if (session.latitude !== null && session.longitude !== null && session.location_label?.trim()) {
+          formData.append('latitude', String(session.latitude));
+          formData.append('longitude', String(session.longitude));
+          formData.append('location_label', session.location_label.trim());
+        }
+        if (session.note?.trim()) {
+          formData.append('note', session.note.trim());
+        }
+        session.photos.forEach((photo) => {
+          formData.append('photos', dataUrlToFile(photo));
+        });
+        formData.append('parked_at', session.started_at);
+        await api.createRecord(token, formData);
+        setActiveParking(null);
+        await refreshData(token, currentUser, ownerIdForQuery, setRecords, setUsers, setMessage);
+        setMessage('Parking session ended and saved.');
+      } finally {
+        endParkingInFlightRef.current = false;
+      }
+    },
+    [currentUser, ownerIdForQuery, token]
+  );
+
   useEffect(() => {
-    if (!currentUser || !activeParking || !window.isSecureContext || !('Notification' in window)) {
+    const serviceWorker = navigator.serviceWorker;
+    if (!window.isSecureContext || !('Notification' in window) || !serviceWorker) {
       return;
     }
 
     let cancelled = false;
     let notifyInterval: number | null = null;
 
-    const emitParkingNotification = (): void => {
+    const clearNotifications = async (): Promise<void> => {
+      try {
+        await clearActiveParkingNotifications();
+      } catch {
+        // ignore notification cleanup failures
+      }
+    };
+
+    if (!currentUser || !activeParking) {
+      void clearNotifications();
+      return;
+    }
+
+    const emitParkingNotification = async (): Promise<void> => {
       if (cancelled || Notification.permission !== 'granted') {
         return;
       }
 
       try {
-        const locationText = activeParking.location_label?.trim() ? `Location: ${activeParking.location_label}` : '';
-        const notification = new Notification('You are parked', {
-          body: `Active: ${formatActiveDuration(activeParking.started_at)}${locationText ? `\n${locationText}` : ''}`,
-          tag: 'fmr-active-parking'
-        });
-        notification.onclick = () => {
-          try {
-            notification.close();
-          } catch {
-            // no-op
-          }
-          window.focus();
-        };
+        await showActiveParkingNotification(activeParking);
       } catch {
         // ignore notification delivery failures
       }
     };
 
     const startNotifications = (): void => {
-      emitParkingNotification();
-      notifyInterval = window.setInterval(emitParkingNotification, 60000);
+      void emitParkingNotification();
+      notifyInterval = window.setInterval(() => {
+        void emitParkingNotification();
+      }, 60000);
     };
 
     if (Notification.permission === 'default') {
@@ -570,8 +673,37 @@ function App(): JSX.Element {
       if (notifyInterval !== null) {
         window.clearInterval(notifyInterval);
       }
+      void clearNotifications();
     };
   }, [currentUser?.id, activeParking]);
+
+  useEffect(() => {
+    const serviceWorker = navigator.serviceWorker;
+    if (!currentUser || !activeParking || !serviceWorker) {
+      return;
+    }
+
+    const handleServiceWorkerMessage = (event: MessageEvent): void => {
+      const data = event.data as { type?: string } | undefined;
+      if (data?.type !== STOP_ACTIVE_PARKING_SERVICE_WORKER_MESSAGE) {
+        return;
+      }
+
+      void (async () => {
+        try {
+          await endActiveParkingSession(activeParking);
+        } catch (error) {
+          setMessage((error as Error).message);
+        }
+      })();
+    };
+
+    serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+
+    return () => {
+      serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+    };
+  }, [currentUser?.id, activeParking, endActiveParkingSession]);
 
   useEffect(() => {
     if (!currentUser || !message) {
@@ -696,27 +828,7 @@ function App(): JSX.Element {
                 <ActiveParkingCard
                   parking={activeParking}
                   onEndParking={async () => {
-                    const formData = new FormData();
-                    if (
-                      activeParking.latitude !== null &&
-                      activeParking.longitude !== null &&
-                      activeParking.location_label?.trim()
-                    ) {
-                      formData.append('latitude', String(activeParking.latitude));
-                      formData.append('longitude', String(activeParking.longitude));
-                      formData.append('location_label', activeParking.location_label.trim());
-                    }
-                    if (activeParking.note?.trim()) {
-                      formData.append('note', activeParking.note.trim());
-                    }
-                    activeParking.photos.forEach((photo) => {
-                      formData.append('photos', dataUrlToFile(photo));
-                    });
-                    formData.append('parked_at', activeParking.started_at);
-                    await api.createRecord(token, formData);
-                    setActiveParking(null);
-                    await refreshData(token, currentUser, ownerIdForQuery, setRecords, setUsers, setMessage);
-                    setMessage('Parking session ended and saved.');
+                    await endActiveParkingSession(activeParking);
                   }}
                   onError={setMessage}
                 />
@@ -805,6 +917,11 @@ function App(): JSX.Element {
                 />
               </section>
             )}
+
+            <section className="panel panel-wide">
+              <h2>Info</h2>
+              <InfoCard />
+            </section>
           </div>
         )}
       </main>
@@ -2563,6 +2680,22 @@ function AdminUsersCard({
           </section>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function InfoCard(): JSX.Element {
+  return (
+    <div className="info-list">
+      <p className="small-meta info-row">
+        Repository:{' '}
+        <a className="info-link" href={APP_REPOSITORY_URL} target="_blank" rel="noreferrer">
+          {APP_REPOSITORY_URL}
+        </a>
+      </p>
+      <p className="small-meta info-row">
+        Version: <code className="info-version">{APP_VERSION}</code>
+      </p>
     </div>
   );
 }

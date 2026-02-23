@@ -59,7 +59,9 @@ Core flow:
   - `Take me there` links (Google Maps / OpenStreetMap)
   - `Actions` section with `End parking`
 - Active session persistence across app restarts
+- Active parking notifications are delivered via service worker and include actionable options (`Take me there`, `Stop parking`)
 - History with expandable cards, notes, photos, map preview, and route links
+- Settings includes an `Info` card with repository link and build version tag
 
 ## Read this next (task-oriented)
 

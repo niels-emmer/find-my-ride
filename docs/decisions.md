@@ -238,6 +238,29 @@
   - `seed_history.sql` sets fixed sample rows so `history` capture state remains stable (second row expanded with map and no note/photos).
   - `capture.mjs` enforces required dimensions (`1170x1992`), theme (`dark` + `evergreen`), and `2.0x` visual zoom.
 
+## ADR-029: Actionable active-parking notifications via service worker
+
+- Date: 2026-02-23
+- Status: accepted
+- Decision: Move active-parking notifications to service-worker `showNotification` and include action buttons for `Take me there` and `Stop parking`.
+- Why: Improves notification reliability/persistence across platforms (especially Android/macOS) and enables direct action handling from the notification itself.
+- Details:
+  - Notification title/body emphasizes parking state: `You are parked here` + elapsed parked time.
+  - Notifications use a stable tag (`fmr-active-parking`) and `requireInteraction` for stronger persistence behavior.
+  - `Take me there` opens Google Maps walking directions when coordinates are present.
+  - `Stop parking` posts a message (`FMR_STOP_ACTIVE_PARKING`) from service worker to app clients so the active session is finalized and saved without opening in-app controls first.
+
+## ADR-030: Reintroduce settings metadata in a dedicated Info card
+
+- Date: 2026-02-23
+- Status: accepted
+- Decision: Add a dedicated `Info` card in Settings to surface repository URL and current build version tag.
+- Why: Keeps onboarding/support metadata discoverable for first-time/self-hosted users without adding noise to profile/admin forms.
+- Details:
+  - `Repository` row links to `https://github.com/niels-emmer/find-my-ride`.
+  - `Version` row shows `VITE_APP_VERSION` (derived from deployment `APP_VERSION`).
+  - Placement is below Admin for admin users and below Profile for non-admin users.
+
 ## Related docs
 
 - [Docs index](index.md)

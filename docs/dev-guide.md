@@ -123,6 +123,7 @@ Endpoints:
   - after `Remember This`, app switches to `You are parked` with start timestamp + running duration
   - active panel shows optional location map, note, thumbnails, and `End parking` confirmation (yes/no)
   - active session is sticky per user across app close/reopen via local browser persistence
+  - while active (and notification permission granted), service-worker notifications show `You are parked here` with elapsed time and actions for `Take me there` and `Stop parking`
 - `history` record cards:
   - collapsed view shows time/date, saved location text, and quick actions
   - `More info` expands details with OpenStreetMap embed preview, a `More details` note section, thumbnails, and a `Take me there` section
@@ -136,6 +137,9 @@ Endpoints:
 - `settings` > `admin` layout:
   - `Add users` section for username/password/admin toggle creation
   - `Edit users` section for list + edit/delete actions (non-self users only)
+- `settings` also includes an `Info` card with:
+  - repository URL link (`https://github.com/niels-emmer/find-my-ride`)
+  - build version tag from `VITE_APP_VERSION`
 
 ## MFA behavior
 
